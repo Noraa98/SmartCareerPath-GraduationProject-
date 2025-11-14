@@ -51,6 +51,9 @@ namespace SmartCareerPath.Infrastructure.Persistence.UnitOfWork
         public IRepository<User> Users => _users ??= new Repository<User>(_context);
         public IRepository<Role> Roles => _roles ??= new Repository<Role>(_context);
         public IRepository<UserProfile> UserProfiles => _userProfiles ??= new Repository<UserProfile>(_context);
+        public IQueryable<UserProfile> UserProfilesQuery
+    => _context.UserProfiles.AsQueryable();
+
         public IRepository<Skill> Skills => _skills ??= new Repository<Skill>(_context);
         public IRepository<UserSkill> UserSkills => _userSkills ??= new Repository<UserSkill>(_context);
         public IRepository<CareerPath> CareerPaths => _careerPaths ??= new Repository<CareerPath>(_context);

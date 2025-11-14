@@ -185,8 +185,6 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("RefreshToken");
 
-                    b.HasIndex("Token");
-
                     b.HasIndex("UserId");
 
                     b.ToTable("AuthTokens", (string)null);
@@ -1692,17 +1690,14 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Country")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 

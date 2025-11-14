@@ -17,12 +17,11 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Configurations.Auth
 
             builder.HasKey(t => t.Id);
 
-            builder.HasIndex(t => t.Token);
+            // builder.HasIndex(t => t.Token);
             builder.HasIndex(t => t.RefreshToken);
 
             builder.Property(t => t.Token)
-                .IsRequired()
-                .HasMaxLength(500);
+                .IsRequired();
 
             builder.Property(t => t.RefreshToken)
                 .HasMaxLength(500);

@@ -20,6 +20,7 @@ namespace SmartCareerPath.Domain.Contracts
         IRepository<User> Users { get; }
         IRepository<Role> Roles { get; }
         IRepository<UserProfile> UserProfiles { get; }
+        IQueryable<UserProfile> UserProfilesQuery { get; }
         IRepository<Skill> Skills { get; }
         IRepository<UserSkill> UserSkills { get; }
         IRepository<CareerPath> CareerPaths { get; }

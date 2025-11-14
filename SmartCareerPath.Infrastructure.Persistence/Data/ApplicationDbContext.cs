@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SmartCareerPath.Domain.Common.BaseEntities;
 using SmartCareerPath.Domain.Entities.AIEngine;
 using SmartCareerPath.Domain.Entities.Auth;
@@ -15,11 +15,6 @@ using SmartCareerPath.Domain.Entities.ResumeAndParsing;
 using SmartCareerPath.Domain.Entities.SkillManagement;
 using SmartCareerPath.Domain.Entities.SubscriptionsAndBilling;
 using SmartCareerPath.Infrastructure.Persistence.Data.Configurations.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartCareerPath.Infrastructure.Persistence.Data
 {
