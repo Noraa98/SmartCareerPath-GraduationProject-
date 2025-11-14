@@ -11,11 +11,6 @@ using SmartCareerPath.Domain.Entities.Quiz;
 using SmartCareerPath.Domain.Entities.ResumeAndParsing;
 using SmartCareerPath.Domain.Entities.SkillManagement;
 using SmartCareerPath.Domain.Entities.SubscriptionsAndBilling;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartCareerPath.Domain.Contracts
 {

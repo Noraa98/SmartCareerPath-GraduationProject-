@@ -21,6 +21,11 @@ namespace SmartCareerPath.APIs
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
+            builder.Services.AddEndpointsApiExplorer();
+
+            builder.Services.AddSwaggerGen();
+           
+
             var app = builder.Build();
 
             // Auto-migrate database on startup (optional)
@@ -34,6 +39,8 @@ namespace SmartCareerPath.APIs
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();

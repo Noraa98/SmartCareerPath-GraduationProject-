@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Data\Migrations\" />
     <Folder Include="Data\DbInitializer\" />
-    <Folder Include="Data\Seed\" />
   </ItemGroup>
 
   <ItemGroup>
