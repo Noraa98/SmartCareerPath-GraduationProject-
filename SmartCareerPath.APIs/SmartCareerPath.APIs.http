@@ -1,0 +1,6 @@
+@SmartCareerPath.APIs_HostAddress = http://localhost:5164
+
+GET {{SmartCareerPath.APIs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

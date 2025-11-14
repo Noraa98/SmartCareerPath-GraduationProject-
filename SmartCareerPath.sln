@@ -1,0 +1,59 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35521.163 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APIs", "APIs", "{11557483-927F-49A1-A897-97D902FEDF9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCareerPath.APIs", "SmartCareerPath.APIs\SmartCareerPath.APIs.csproj", "{A59505EE-222E-4652-BA4B-8E60A7C1BEF6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{45EA6D8D-BCF9-4F5B-9614-D93569309290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCareerPath.Application", "SmartCareerPath.Application\SmartCareerPath.Application.csproj", "{916CD8E7-A31F-4540-BD21-BB04DB0FAB78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCareerPath.Application.Abstraction", "SmartCareerPath.Application.Abstraction\SmartCareerPath.Application.Abstraction.csproj", "{6947B439-8BFF-400A-9D6A-A18398E6C1BE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCareerPath.Domain", "SmartCareerPath.Domain\SmartCareerPath.Domain.csproj", "{2FC8496D-524F-460C-8DEA-F293D81FB6E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{4FAE29CB-5688-4F1E-9EE1-F65A2D225BFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartCareerPath.Infrastructure.Persistence", "SmartCareerPath.Infrastructure.Persistence\SmartCareerPath.Infrastructure.Persistence.csproj", "{915DCB59-3AD2-4E2B-BE92-E9209FFAC652}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A59505EE-222E-4652-BA4B-8E60A7C1BEF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59505EE-222E-4652-BA4B-8E60A7C1BEF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A59505EE-222E-4652-BA4B-8E60A7C1BEF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A59505EE-222E-4652-BA4B-8E60A7C1BEF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{916CD8E7-A31F-4540-BD21-BB04DB0FAB78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{916CD8E7-A31F-4540-BD21-BB04DB0FAB78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{916CD8E7-A31F-4540-BD21-BB04DB0FAB78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{916CD8E7-A31F-4540-BD21-BB04DB0FAB78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6947B439-8BFF-400A-9D6A-A18398E6C1BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6947B439-8BFF-400A-9D6A-A18398E6C1BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6947B439-8BFF-400A-9D6A-A18398E6C1BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6947B439-8BFF-400A-9D6A-A18398E6C1BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FC8496D-524F-460C-8DEA-F293D81FB6E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FC8496D-524F-460C-8DEA-F293D81FB6E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FC8496D-524F-460C-8DEA-F293D81FB6E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FC8496D-524F-460C-8DEA-F293D81FB6E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{915DCB59-3AD2-4E2B-BE92-E9209FFAC652}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{915DCB59-3AD2-4E2B-BE92-E9209FFAC652}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{915DCB59-3AD2-4E2B-BE92-E9209FFAC652}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{915DCB59-3AD2-4E2B-BE92-E9209FFAC652}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A59505EE-222E-4652-BA4B-8E60A7C1BEF6} = {11557483-927F-49A1-A897-97D902FEDF9A}
+		{916CD8E7-A31F-4540-BD21-BB04DB0FAB78} = {45EA6D8D-BCF9-4F5B-9614-D93569309290}
+		{6947B439-8BFF-400A-9D6A-A18398E6C1BE} = {45EA6D8D-BCF9-4F5B-9614-D93569309290}
+		{2FC8496D-524F-460C-8DEA-F293D81FB6E6} = {45EA6D8D-BCF9-4F5B-9614-D93569309290}
+		{915DCB59-3AD2-4E2B-BE92-E9209FFAC652} = {4FAE29CB-5688-4F1E-9EE1-F65A2D225BFE}
+	EndGlobalSection
+EndGlobal
