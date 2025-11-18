@@ -21,7 +21,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Configurations.Auth
             builder.HasIndex(t => t.RefreshToken);
 
             builder.Property(t => t.Token)
-                .IsRequired();
+                .IsRequired()
+                .HasMaxLength(4000);
 
             builder.Property(t => t.RefreshToken)
                 .HasMaxLength(500);

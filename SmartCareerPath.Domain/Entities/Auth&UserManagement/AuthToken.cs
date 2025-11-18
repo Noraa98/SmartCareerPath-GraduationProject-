@@ -10,6 +10,7 @@ namespace SmartCareerPath.Domain.Entities.Auth
         public User User { get; set; }
 
         [Required]
+        [MaxLength(4000)]
         public string Token { get; set; }
 
         [MaxLength(500)]

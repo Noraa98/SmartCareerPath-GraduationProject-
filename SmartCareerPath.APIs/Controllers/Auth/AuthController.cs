@@ -4,6 +4,7 @@ using SmartCareerPath.Application.Abstraction.DTOs.RequestDTOs;
 using SmartCareerPath.Application.Abstraction.DTOs.ResponseDTOs;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Auth;
 using System.Security.Claims;
+using Microsoft.Extensions.Logging;
 
 namespace SmartCareerPath.APIs.Controllers.Auth
 {
@@ -12,10 +13,21 @@ namespace SmartCareerPath.APIs.Controllers.Auth
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
+        }
+
+        private int? GetUserIdFromClaims()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return null;
+
+            return userId;
         }
 
         /// <summary>
@@ -30,12 +42,20 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.RegisterAsync(request);
+            try
+            {
+                var result = await _authService.RegisterAsync(request);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(result.Value);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while registering user {Email}", request?.Email);
+                return Problem("An unexpected error occurred while registering the user.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -51,12 +71,20 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.LoginAsync(request);
+            try
+            {
+                var result = await _authService.LoginAsync(request);
 
-            if (result.IsFailure)
-                return Unauthorized(new { error = result.Error });
+                if (result.IsFailure)
+                    return Unauthorized(new { error = result.Error });
 
-            return Ok(result.Value);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while logging in user {Email}", request?.Email);
+                return Problem("An unexpected error occurred while logging in.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -71,12 +99,20 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.RefreshTokenAsync(request);
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(request);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(result.Value);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while refreshing token");
+                return Problem("An unexpected error occurred while refreshing token.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -88,17 +124,24 @@ namespace SmartCareerPath.APIs.Controllers.Auth
         [ProducesResponseType(401)]
         public async Task<IActionResult> Logout()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            var userId = GetUserIdFromClaims();
+            if (userId == null)
                 return Unauthorized();
 
-            var result = await _authService.LogoutAsync(userId);
+            try
+            {
+                var result = await _authService.LogoutAsync(userId.Value);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(new { message = "Logged out successfully" });
+                return Ok(new { message = "Logged out successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while logging out user {UserId}", userId);
+                return Problem("An unexpected error occurred while logging out.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -114,17 +157,24 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            var userId = GetUserIdFromClaims();
+            if (userId == null)
                 return Unauthorized();
 
-            var result = await _authService.ChangePasswordAsync(userId, request);
+            try
+            {
+                var result = await _authService.ChangePasswordAsync(userId.Value, request);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(new { message = "Password changed successfully. Please login again." });
+                return Ok(new { message = "Password changed successfully. Please login again." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while changing password for user {UserId}", userId);
+                return Problem("An unexpected error occurred while changing the password.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -138,10 +188,19 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            await _authService.ForgotPasswordAsync(request);
+            try
+            {
+                // For security do not reveal whether the email exists.
+                await _authService.ForgotPasswordAsync(request);
 
-            // Always return success to prevent email enumeration
-            return Ok(new { message = "If the email exists, a password reset link has been sent." });
+                return Ok(new { message = "If the email exists, a password reset link has been sent." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while processing forgot password for {Email}", request?.Email);
+                // Still return generic OK to avoid enumeration
+                return Ok(new { message = "If the email exists, a password reset link has been sent." });
+            }
         }
 
         /// <summary>
@@ -156,12 +215,20 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.ResetPasswordAsync(request);
+            try
+            {
+                var result = await _authService.ResetPasswordAsync(request);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(new { message = "Password reset successfully. You can now login with your new password." });
+                return Ok(new { message = "Password reset successfully. You can now login with your new password." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while resetting password for {Email}", request?.Email);
+                return Problem("An unexpected error occurred while resetting the password.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -176,12 +243,20 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.VerifyEmailAsync(request);
+            try
+            {
+                var result = await _authService.VerifyEmailAsync(request);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                    return BadRequest(new { error = result.Error });
 
-            return Ok(new { message = "Email verified successfully!" });
+                return Ok(new { message = "Email verified successfully!" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while verifying email for {Email}", request?.Email);
+                return Problem("An unexpected error occurred while verifying the email.", statusCode: 500);
+            }
         }
 
         /// <summary>
@@ -193,16 +268,16 @@ namespace SmartCareerPath.APIs.Controllers.Auth
         [ProducesResponseType(401)]
         public IActionResult GetCurrentUser()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = GetUserIdFromClaims();
+            if (userId == null)
+                return Unauthorized();
+
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
             return Ok(new UserDto
             {
-                Id = int.Parse(userId),
+                Id = userId.Value,
                 Email = email,
                 Role = role
             });

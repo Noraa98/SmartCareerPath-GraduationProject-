@@ -65,6 +65,9 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
         /// <summary>
         /// Verifies password against stored hash
+        /// Supports two storage formats:
+        /// - combined (salt+hash) produced by HashPassword
+        /// - separate hash and salt produced by HashPasswordWithSalt (pass salt in passwordSalt)
         /// </summary>
         public bool VerifyPassword(string password, string passwordHash, string passwordSalt = null)
         {
@@ -73,14 +76,34 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
             try
             {
-                // Convert base64 hash back to bytes
-                byte[] hashBytes = Convert.FromBase64String(passwordHash);
+                // Try to decode the stored passwordHash
+                var storedBytes = Convert.FromBase64String(passwordHash);
 
-                // Extract the salt (first 16 bytes)
-                byte[] salt = new byte[SaltSize];
-                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+                byte[] salt;
+                byte[] expectedHash;
 
-                // Hash the input password with the same salt
+                if (storedBytes.Length == (SaltSize + KeySize))
+                {
+                    // combined format: first SaltSize bytes are salt
+                    salt = new byte[SaltSize];
+                    Array.Copy(storedBytes, 0, salt, 0, SaltSize);
+
+                    expectedHash = new byte[KeySize];
+                    Array.Copy(storedBytes, SaltSize, expectedHash, 0, KeySize);
+                }
+                else if (!string.IsNullOrEmpty(passwordSalt))
+                {
+                    // separate format: storedBytes is the raw hash; use provided salt
+                    expectedHash = storedBytes;
+                    salt = Convert.FromBase64String(passwordSalt);
+                }
+                else
+                {
+                    // Unknown format and no salt provided
+                    return false;
+                }
+
+                // Hash the input password with the extracted/given salt
                 byte[] hash = KeyDerivation.Pbkdf2(
                     password: password,
                     salt: salt,
@@ -89,14 +112,15 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                     numBytesRequested: KeySize
                 );
 
-                // Compare the hashes
-                for (int i = 0; i < KeySize; i++)
-                {
-                    if (hashBytes[i + SaltSize] != hash[i])
-                        return false;
-                }
+                // Compare the hashes in constant time
+                if (hash.Length != expectedHash.Length)
+                    return false;
 
-                return true;
+                var diff = 0;
+                for (int i = 0; i < hash.Length; i++)
+                    diff |= hash[i] ^ expectedHash[i];
+
+                return diff == 0;
             }
             catch
             {

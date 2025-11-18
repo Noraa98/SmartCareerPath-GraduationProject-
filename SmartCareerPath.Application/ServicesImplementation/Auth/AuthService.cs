@@ -7,6 +7,8 @@ using SmartCareerPath.Domain.Contracts;
 using SmartCareerPath.Domain.Entities.Auth;
 using SmartCareerPath.Domain.Entities.ProfileAndInterests;
 using SmartCareerPath.Infrastructure.Persistence.Data;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SmartCareerPath.Application.ServicesImplementation.Auth
 {
@@ -27,6 +29,19 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
             _passwordService = passwordService;
             _tokenService = tokenService;
             _context = context;
+        }
+
+        private static string ComputeSha256Hash(string rawData)
+        {
+            if (string.IsNullOrEmpty(rawData))
+                return string.Empty;
+
+            using var sha256 = SHA256.Create();
+            var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+            var sb = new StringBuilder();
+            foreach (var b in bytes)
+                sb.Append(b.ToString("x2"));
+            return sb.ToString();
         }
 
         public async Task<Result<AuthResponseDTO>> RegisterAsync(RegisterRequestDTO request)
@@ -65,13 +80,15 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 await _unitOfWork.BeginTransactionAsync();
 
                 // Create user
-                var (hash, salt) = _passwordService.HashPasswordWithSalt(request.Password);
+                // Use combined hash format so VerifyPassword can extract salt correctly
+                var combinedHash = _passwordService.HashPassword(request.Password);
 
                 var user = new User
                 {
                     Email = request.Email,
-                    PasswordHash = hash,
-                    PasswordSalt = salt,
+                    PasswordHash = combinedHash,
+                    // keep PasswordSalt value non-null for DB schema compatibility
+                    PasswordSalt = _passwordService.GenerateSalt(),
                     FullName = request.FullName,
                     Phone = request.Phone,
                     RoleId = role?.Id
@@ -95,7 +112,7 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                     LinkedInUrl = "",           
                     GithubUrl = "",             
                     PortfolioUrl = "",          
-                    City = "",                  
+                    City = "",
                     Country = ""
                 };
 
@@ -106,15 +123,15 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 var accessToken = _tokenService.GenerateAccessToken(user.Id, user.Email, role.Name);
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
-                // Save refresh token
+                // Save refresh token, store hash of access token to avoid truncation and for security
                 var authToken = new AuthToken
                 {
                     UserId = user.Id,
-                    Token = accessToken,
+                    Token = ComputeSha256Hash(accessToken),
                     RefreshToken = refreshToken,
                     ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                     RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
-                    DeviceInfo = "",      
+                    DeviceInfo = "",
                     IpAddress = "",
                     CreatedAt = DateTime.UtcNow
                 };
@@ -206,14 +223,16 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 token.RevokedAt = DateTime.UtcNow;
             }
 
-            // Save new token
+            // Save new token (store hash)
             var authToken = new AuthToken
             {
                 UserId = user.Id,
-                Token = accessToken,
+                Token = ComputeSha256Hash(accessToken),
                 RefreshToken = refreshToken,
                 ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                 RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
+                DeviceInfo = "",
+                IpAddress = "",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -262,14 +281,16 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
             authToken.IsRevoked = true;
             authToken.RevokedAt = DateTime.UtcNow;
 
-            // Save new token
+            // Save new token (store hash)
             var newAuthToken = new AuthToken
             {
                 UserId = user.Id,
-                Token = newAccessToken,
+                Token = ComputeSha256Hash(newAccessToken),
                 RefreshToken = newRefreshToken,
                 ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                 RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
+                DeviceInfo = "",
+                IpAddress = "",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -397,8 +418,10 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
         public async Task<Result> RevokeTokenAsync(string token)
         {
+            var hash = ComputeSha256Hash(token);
+
             var authToken = await _context.AuthTokens
-                .FirstOrDefaultAsync(t => t.Token == token);
+                .FirstOrDefaultAsync(t => t.Token == hash);
 
             if (authToken == null)
                 return Result.Failure("Token not found");

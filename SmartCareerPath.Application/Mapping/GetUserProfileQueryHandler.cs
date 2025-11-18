@@ -19,10 +19,11 @@ namespace SmartCareerPath.Application.Mapping
 
         public async Task<BaseResponse<UserProfileDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
         {
-            var profile = await _unitOfWork.UserProfiles
+            // Use the queryable property from the unit of work so EF Core Include/ThenInclude extensions are available
+            var profile = await _unitOfWork.UserProfilesQuery
                 .Include(p => p.UserInterests)
                     .ThenInclude(ui => ui.Interest)
-                .FirstOrDefaultAsync(p => p.UserId == request.UserId);
+                .FirstOrDefaultAsync(p => p.UserId == request.UserId, cancellationToken);
 
             if (profile == null)
                 return BaseResponse<UserProfileDto>.FailureResult("Profile not found");
@@ -31,7 +32,7 @@ namespace SmartCareerPath.Application.Mapping
             var skills = await _unitOfWork.UserSkills
                 .Include(s => s.Skill)
                 .Where(s => s.UserId == request.UserId)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
 
             var profileDto = _mapper.Map<UserProfileDto>(profile);
             profileDto.Skills = _mapper.Map<List<UserSkillDto>>(skills);
