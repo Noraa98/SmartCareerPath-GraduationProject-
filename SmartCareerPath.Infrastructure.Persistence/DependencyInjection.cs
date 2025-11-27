@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCareerPath.Application.Abstraction.ServicesContracts.AI;
 using SmartCareerPath.Domain.Contracts;
 using SmartCareerPath.Domain.Contracts.Repositories;
 using SmartCareerPath.Infrastructure.Persistence.Data;
 using SmartCareerPath.Infrastructure.Persistence.Repositories;
+using SmartCareerPath.Infrastructure.Persistence.Services.AI;
 
 namespace SmartCareerPath.Infrastructure.Persistence
 {
@@ -31,6 +33,9 @@ namespace SmartCareerPath.Infrastructure.Persistence
             // Repository Pattern
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork.UnitOfWork>();
+
+            // AI Services
+            services.AddScoped<IAIService, AIService>();
 
             return services;
         }

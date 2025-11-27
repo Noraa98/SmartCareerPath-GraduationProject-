@@ -9,11 +9,11 @@ using SmartCareerPath.Infrastructure.Persistence.Data;
 
 #nullable disable
 
-namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
+namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251114160106_MakeUserProfileFieldsNullable")]
-    partial class MakeUserProfileFieldsNullable
+    [Migration("20251127104320_IncreaseAuthTokenTokenLength")]
+    partial class IncreaseAuthTokenTokenLength
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -176,7 +176,7 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -187,8 +187,6 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RefreshToken");
-
-                    b.HasIndex("Token");
 
                     b.HasIndex("UserId");
 

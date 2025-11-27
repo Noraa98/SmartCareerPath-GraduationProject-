@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SmartCareerPath.APIs.Middleware;
+using SmartCareerPath.Application;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Auth;
 using SmartCareerPath.Application.ServicesImplementation.Auth;
 using SmartCareerPath.Infrastructure.Persistence;
@@ -15,11 +16,31 @@ namespace SmartCareerPath.APIs
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // If an OpenRouter API key is present in configuration (user-secrets or appsettings),
+            // copy it into an environment variable so existing code can continue to use
+            // Environment.GetEnvironmentVariable("OPENROUTER_API_KEY").
+            try
+            {
+                var cfgKey = builder.Configuration["OpenRouter:ApiKey"] ?? builder.Configuration["OPENROUTER_API_KEY"];
+                if (!string.IsNullOrWhiteSpace(cfgKey))
+                {
+                    Environment.SetEnvironmentVariable("OPENROUTER_API_KEY", cfgKey);
+                    Console.WriteLine("[AI DEBUG] Loaded OPENROUTER_API_KEY from configuration into environment.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AI DEBUG] Unable to load OpenRouter API key from configuration: {ex.Message}");
+            }
+
 
 
             // ============================================================
             // 1) Register Services
             // ============================================================
+
+            // Application (MediatR, Validators, AutoMapper, Pipeline Behaviors)
+            builder.Services.AddApplication();
 
             // Infrastructure (DbContext, Repositories, Unit of Work)
             builder.Services.AddInfrastructure(builder.Configuration);
@@ -107,15 +128,25 @@ namespace SmartCareerPath.APIs
             var app = builder.Build();
 
             // ============================================================
-            // 3) Auto Database Migration
+            // 3) Auto Database Creation (async, non-blocking)
             // ============================================================
 
-            using (var scope = app.Services.CreateScope())
+            // Initialize database in the background to avoid blocking startup
+            _ = Task.Run(async () =>
             {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                if (context.Database.GetPendingMigrations().Any())
-                    await context.Database.MigrateAsync();
-            }
+                try
+                {
+                    using (var scope = app.Services.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                        await context.Database.EnsureCreatedAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database initialization error: {ex.Message}");
+                }
+            });
 
             // ============================================================
             // 4) Configure Pipeline

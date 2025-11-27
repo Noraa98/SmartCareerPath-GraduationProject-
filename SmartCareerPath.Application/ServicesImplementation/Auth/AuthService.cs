@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartCareerPath.Application.Abstraction.DTOs.RequestDTOs;
+using Microsoft.Extensions.Logging;
 using SmartCareerPath.Application.Abstraction.DTOs.ResponseDTOs;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Auth;
 using SmartCareerPath.Domain.Common.ResultPattern;
@@ -16,17 +17,20 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
         private readonly IPasswordService _passwordService;
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             ITokenService tokenService,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            ILogger<AuthService> logger)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _tokenService = tokenService;
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Result<AuthResponseDTO>> RegisterAsync(RegisterRequestDTO request)
@@ -142,8 +146,11 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                return Result<AuthResponseDTO>.Failure($"Registration failed: {ex.Message}");
+                // Log full exception including inner exception for debugging
+                _logger?.LogError(ex, "Registration failed for {Email}", request.Email);
 
+                // Return generic failure message to client (do not expose internal details in production)
+                return Result<AuthResponseDTO>.Failure($"Registration failed: {ex.Message}");
             }
         }
 

@@ -19,7 +19,7 @@ namespace SmartCareerPath.Application.Mapping
 
         public async Task<BaseResponse<UserProfileDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
         {
-            var profile = await _unitOfWork.UserProfiles
+            var profile = await _unitOfWork.UserProfilesQuery
                 .Include(p => p.UserInterests)
                     .ThenInclude(ui => ui.Interest)
                 .FirstOrDefaultAsync(p => p.UserId == request.UserId);

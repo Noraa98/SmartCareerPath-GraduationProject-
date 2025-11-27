@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Migrations\" />
     <Folder Include="Data\DbInitializer\" />
   </ItemGroup>
 
@@ -21,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartCareerPath.Domain\SmartCareerPath.Domain.csproj" />
+    <ProjectReference Include="..\SmartCareerPath.Application.Abstraction\SmartCareerPath.Application.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>

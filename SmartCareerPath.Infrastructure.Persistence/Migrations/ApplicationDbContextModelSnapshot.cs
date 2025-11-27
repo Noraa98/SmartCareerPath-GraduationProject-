@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartCareerPath.Infrastructure.Persistence.Data;
 
 #nullable disable
 
-namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
+namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251114162620_updateAuthToken")]
-    partial class updateAuthToken
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,7 +173,7 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -187,8 +184,6 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RefreshToken");
-
-                    b.HasIndex("Token");
 
                     b.HasIndex("UserId");
 

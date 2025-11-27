@@ -5,33 +5,23 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
+namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IncreaseAuthTokenTokenLength : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AIResponseCache",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    HashKey = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    ResponseText = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    HitCount = table.Column<int>(type: "int", nullable: false),
-                    LastAccessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AIResponseCache", x => x.Id);
-                });
+            // Only alter AuthTokens.Token length; other schema already present in database.
+            migrationBuilder.AlterColumn<string>(
+                name: "Token",
+                table: "AuthTokens",
+                type: "nvarchar(max)",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(500)",
+                oldMaxLength: 500);
 
             migrationBuilder.CreateTable(
                 name: "CareerPaths",
@@ -476,7 +466,7 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Token = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(max)", maxLength: 500, nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     RefreshTokenExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -673,12 +663,12 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
-                    Bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CurrentRole = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     ExperienceYears = table.Column<int>(type: "int", nullable: true),
                     ProfilePictureUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    City = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     LinkedInUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     GithubUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     PortfolioUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -1481,11 +1471,6 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
                 column: "RefreshToken");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuthTokens_Token",
-                table: "AuthTokens",
-                column: "Token");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AuthTokens_UserId",
                 table: "AuthTokens",
                 column: "UserId");
@@ -1823,8 +1808,14 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "AIResponseCache");
+                migrationBuilder.AlterColumn<string>(
+                    name: "Token",
+                    table: "AuthTokens",
+                    type: "nvarchar(500)",
+                    maxLength: 500,
+                    nullable: false,
+                    oldClrType: typeof(string),
+                    oldType: "nvarchar(max)");
 
             migrationBuilder.DropTable(
                 name: "ApplicationStatusHistory");
