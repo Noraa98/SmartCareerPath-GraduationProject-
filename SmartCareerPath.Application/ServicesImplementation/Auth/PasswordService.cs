@@ -73,30 +73,58 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
             try
             {
-                // Convert base64 hash back to bytes
-                byte[] hashBytes = Convert.FromBase64String(passwordHash);
+                byte[] salt;
 
-                // Extract the salt (first 16 bytes)
-                byte[] salt = new byte[SaltSize];
-                Array.Copy(hashBytes, 0, salt, 0, SaltSize);
-
-                // Hash the input password with the same salt
-                byte[] hash = KeyDerivation.Pbkdf2(
-                    password: password,
-                    salt: salt,
-                    prf: KeyDerivationPrf.HMACSHA256,
-                    iterationCount: Iterations,
-                    numBytesRequested: KeySize
-                );
-
-                // Compare the hashes
-                for (int i = 0; i < KeySize; i++)
+                // If separate salt is provided, use it
+                if (!string.IsNullOrEmpty(passwordSalt))
                 {
-                    if (hashBytes[i + SaltSize] != hash[i])
-                        return false;
-                }
+                    salt = Convert.FromBase64String(passwordSalt);
+                    // Hash is just the hash bytes, not combined with salt
+                    byte[] storedHash = Convert.FromBase64String(passwordHash);
+                    
+                    byte[] hash = KeyDerivation.Pbkdf2(
+                        password: password,
+                        salt: salt,
+                        prf: KeyDerivationPrf.HMACSHA256,
+                        iterationCount: Iterations,
+                        numBytesRequested: KeySize
+                    );
 
-                return true;
+                    // Compare the hashes
+                    for (int i = 0; i < KeySize; i++)
+                    {
+                        if (storedHash[i] != hash[i])
+                            return false;
+                    }
+                    return true;
+                }
+                else
+                {
+                    // Legacy format: salt is embedded in hash
+                    byte[] hashBytes = Convert.FromBase64String(passwordHash);
+
+                    // Extract the salt (first 16 bytes)
+                    salt = new byte[SaltSize];
+                    Array.Copy(hashBytes, 0, salt, 0, SaltSize);
+
+                    // Hash the input password with the same salt
+                    byte[] hash = KeyDerivation.Pbkdf2(
+                        password: password,
+                        salt: salt,
+                        prf: KeyDerivationPrf.HMACSHA256,
+                        iterationCount: Iterations,
+                        numBytesRequested: KeySize
+                    );
+
+                    // Compare the hashes
+                    for (int i = 0; i < KeySize; i++)
+                    {
+                        if (hashBytes[i + SaltSize] != hash[i])
+                            return false;
+                    }
+
+                    return true;
+                }
             }
             catch
             {

@@ -176,7 +176,7 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 return Result<AuthResponseDTO>.Failure("Account is deactivated");
 
             // Verify password
-            if (!_passwordService.VerifyPassword(request.Password, user.PasswordHash))
+            if (!_passwordService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 // Increment failed login attempts
                 user.FailedLoginAttempts++;
@@ -221,6 +221,8 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 RefreshToken = refreshToken,
                 ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                 RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
+                DeviceInfo = "",
+                IpAddress = "",
                 CreatedAt = DateTime.UtcNow
             };
 

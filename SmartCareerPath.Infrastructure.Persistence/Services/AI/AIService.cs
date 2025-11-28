@@ -2,6 +2,7 @@
 
 using SmartCareerPath.Application.Abstraction.DTOs.AI;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.AI;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,13 @@ namespace SmartCareerPath.Infrastructure.Persistence.Services.AI
 {
     public class AIService : IAIService
     {
+        private readonly IConfiguration? _config;
+
+        public AIService(IConfiguration? config = null)
+        {
+            _config = config;
+        }
+
         private const string OpenRouterUrl = "https://openrouter.ai/api/v1/chat/completions";
 
         public async Task<QuizCareerRecommendationResult> RecommendCareerPathFromQuizAsync(QuizCareerRecommendationRequest request)
@@ -230,10 +238,24 @@ namespace SmartCareerPath.Infrastructure.Persistence.Services.AI
         private async Task<string?> CallOpenRouterAsync(string systemPrompt, string userPrompt, double temperature = 0.7, int maxTokens = 512)
         {
             var apiKey = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                Console.WriteLine("[AI DEBUG] OpenRouter API key loaded from environment (OPENROUTER_API_KEY) for GenerateInterviewQuestions.");
+            }
+
+            if (string.IsNullOrWhiteSpace(apiKey) && _config != null)
+            {
+                apiKey = _config["OpenRouter:ApiKey"];
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    Console.WriteLine("[AI DEBUG] OpenRouter API key loaded from configuration (OpenRouter:ApiKey).");
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                System.Diagnostics.Debug.WriteLine("OpenRouter API key not found in environment (OPENROUTER_API_KEY)");
-                Console.WriteLine("[AI DEBUG] OpenRouter API key not found in environment (OPENROUTER_API_KEY). The model will not be called.");
+                System.Diagnostics.Debug.WriteLine("OpenRouter API key not found in environment (OPENROUTER_API_KEY) or configuration (OpenRouter:ApiKey)");
+                Console.WriteLine("[AI DEBUG] OpenRouter API key not found in environment (OPENROUTER_API_KEY) or configuration (OpenRouter:ApiKey). The model will not be called.");
                 return null;
             }
 
@@ -770,9 +792,34 @@ Sincerely,
             role = role ?? "Software Engineer";
             interviewType = interviewType ?? "Technical";
 
+            Console.WriteLine("[AI DEBUG] GenerateInterviewQuestionsAsync called. Checking for API key...");
             var apiKey = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
+                Console.WriteLine($"[AI DEBUG] OpenRouter API key loaded from environment (OPENROUTER_API_KEY): key length={apiKey.Length}");
+            }
+            else
+            {
+                Console.WriteLine("[AI DEBUG] OPENROUTER_API_KEY environment variable is empty or null.");
+            }
+
+            if (string.IsNullOrWhiteSpace(apiKey) && _config != null)
+            {
+                Console.WriteLine("[AI DEBUG] Attempting to load from configuration (OpenRouter:ApiKey)...");
+                apiKey = _config["OpenRouter:ApiKey"];
+                if (!string.IsNullOrWhiteSpace(apiKey))
+                {
+                    Console.WriteLine($"[AI DEBUG] OpenRouter API key loaded from configuration (OpenRouter:ApiKey): key length={apiKey.Length}");
+                }
+                else
+                {
+                    Console.WriteLine("[AI DEBUG] Configuration key OpenRouter:ApiKey is empty or null.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(apiKey))
+            {
+                Console.WriteLine("[AI DEBUG] API key found. Proceeding with OpenRouter call.");
                 try
                 {
                     using var http = new System.Net.Http.HttpClient();
@@ -795,17 +842,21 @@ Sincerely,
                     var json = System.Text.Json.JsonSerializer.Serialize(payload);
                     using var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
+                    Console.WriteLine("[AI DEBUG] Sending request to OpenRouter...");
                     var resp = await http.PostAsync("https://openrouter.ai/api/v1/chat/completions", content);
                     var respBody = await resp.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[AI DEBUG] OpenRouter response status: {resp.StatusCode}");
 
                     if (!resp.IsSuccessStatusCode)
                     {
                         // fall back to mock if API call fails
+                        Console.WriteLine($"[AI DEBUG] OpenRouter request failed: {resp.StatusCode} {respBody?.Substring(0, Math.Min(200, respBody?.Length ?? 0))}");
                         System.Diagnostics.Debug.WriteLine($"OpenRouter request failed: {resp.StatusCode} {respBody}");
                         return GenerateInterviewQuestionsMock(role, interviewType, questionCount);
                     }
 
                     // Try to parse the response for a generated text
+                    Console.WriteLine($"[AI DEBUG] Parsing OpenRouter response (length={respBody?.Length})...");
                     try
                     {
                         using var doc = System.Text.Json.JsonDocument.Parse(respBody);
@@ -817,9 +868,17 @@ Sincerely,
                             {
                                 var text = contentElem.GetString() ?? string.Empty;
                                 // expect JSON array inside text
+                                Console.WriteLine($"[AI DEBUG] Found message.content (length={text.Length}): {text.Substring(0, Math.Min(200, text.Length))}");
                                 var parsed = TryExtractJsonArray(text);
                                 if (parsed != null && parsed.Any())
+                                {
+                                    Console.WriteLine($"[AI DEBUG] Successfully parsed {parsed.Count} questions from OpenRouter.");
                                     return parsed.Take(questionCount).ToList();
+                                }
+                                else
+                                {
+                                    Console.WriteLine("[AI DEBUG] Failed to extract JSON array from message.content.");
+                                }
                             }
                             // some providers return 'content' directly on choices[0]
                             if (first.TryGetProperty("content", out var contentAlt))
@@ -852,33 +911,11 @@ Sincerely,
             }
 
             // Fallback mock generation
+            Console.WriteLine("[AI DEBUG] No API key or OpenRouter call failed. Using mock fallback.");
             return GenerateInterviewQuestionsMock(role, interviewType, questionCount);
         }
 
         // Helper: Try to extract a JSON array of strings from a text blob
-                // ...existing code...
-
-                // Helper: Try to extract a JSON array of QuizMCQQuestionDto objects from a text blob
-                private static List<QuizMCQQuestionDto>? TryExtractQuizMCQArray(string text)
-                {
-                    text = text.Trim();
-                    try
-                    {
-                        if (text.StartsWith("["))
-                        {
-                            return System.Text.Json.JsonSerializer.Deserialize<List<QuizMCQQuestionDto>>(text);
-                        }
-                        var start = text.IndexOf('[');
-                        var end = text.LastIndexOf(']');
-                        if (start >= 0 && end > start)
-                        {
-                            var sub = text.Substring(start, end - start + 1);
-                            return System.Text.Json.JsonSerializer.Deserialize<List<QuizMCQQuestionDto>>(sub);
-                        }
-                    }
-                    catch { }
-                    return null;
-                }
         private static List<string>? TryExtractJsonArray(string text)
         {
             text = text.Trim();
@@ -903,6 +940,28 @@ Sincerely,
             }
             catch { }
 
+            return null;
+        }
+
+        // Helper: Try to extract a JSON array of QuizMCQQuestionDto objects from a text blob
+        private static List<QuizMCQQuestionDto>? TryExtractQuizMCQArray(string text)
+        {
+            text = text.Trim();
+            try
+            {
+                if (text.StartsWith("["))
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<List<QuizMCQQuestionDto>>(text);
+                }
+                var start = text.IndexOf('[');
+                var end = text.LastIndexOf(']');
+                if (start >= 0 && end > start)
+                {
+                    var sub = text.Substring(start, end - start + 1);
+                    return System.Text.Json.JsonSerializer.Deserialize<List<QuizMCQQuestionDto>>(sub);
+                }
+            }
+            catch { }
             return null;
         }
 
