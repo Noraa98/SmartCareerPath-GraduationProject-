@@ -118,8 +118,8 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                     RefreshToken = refreshToken,
                     ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                     RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
-                    DeviceInfo = "",      
-                    IpAddress = "",
+                    DeviceInfo = null,      
+                    IpAddress = null,
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -176,15 +176,15 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 return Result<AuthResponseDTO>.Failure("Account is deactivated");
 
             // Verify password
-            if (!_passwordService.VerifyPassword(request.Password, user.PasswordHash))
+            if (!_passwordService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 // Increment failed login attempts
                 user.FailedLoginAttempts++;
 
-                if (user.FailedLoginAttempts >= 5)
+                if (user.FailedLoginAttempts >= 15)
                 {
                     user.IsLocked = true;
-                    user.LockedUntil = DateTime.UtcNow.AddMinutes(30);
+                    user.LockedUntil = DateTime.UtcNow.AddMinutes(10);
                 }
 
                 await _context.SaveChangesAsync();
@@ -310,11 +310,13 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 return Result.Failure("User not found");
 
             // Verify current password
-            if (!_passwordService.VerifyPassword(request.CurrentPassword, user.PasswordHash))
+            if (!_passwordService.VerifyPassword(request.CurrentPassword, user.PasswordHash, user.PasswordSalt))
                 return Result.Failure("Current password is incorrect");
 
             // Update password
-            user.PasswordHash = _passwordService.HashPassword(request.NewPassword);
+            var (hash, salt) = _passwordService.HashPasswordWithSalt(request.NewPassword);
+            user.PasswordHash = hash;
+            user.PasswordSalt = salt;
             user.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Users.UpdateAsync(user);
@@ -371,7 +373,9 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                 return Result.Failure("User not found");
 
             // Update password
-            user.PasswordHash = _passwordService.HashPassword(request.NewPassword);
+            var (hash, salt) = _passwordService.HashPasswordWithSalt(request.NewPassword);
+            user.PasswordHash = hash;
+            user.PasswordSalt = salt;
             user.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.Users.UpdateAsync(user);
@@ -382,25 +386,54 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
         public async Task<Result> VerifyEmailAsync(VerifyEmailRequestDTO request)
         {
+            if (string.IsNullOrWhiteSpace(request.Token))
+                return Result.Failure("Token is required");
+
+            
             if (!_tokenService.ValidateToken(request.Token))
                 return Result.Failure("Invalid or expired token");
 
+          
             var user = await _unitOfWork.Users
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.ToLower());
 
             if (user == null)
                 return Result.Failure("User not found");
 
+            
+            if (user.IsEmailVerified)
+                return Result.Success();
+
             user.IsEmailVerified = true;
             user.EmailVerifiedAt = DateTime.UtcNow;
-            user.EmailVerificationToken = null;
             user.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.Users.UpdateAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+           
+            var emailTokenProperty = _context.Model.FindEntityType(typeof(User))
+                .FindProperty(nameof(User.EmailVerificationToken));
 
-            return Result.Success();
+            if (emailTokenProperty != null && emailTokenProperty.IsNullable)
+            {
+                user.EmailVerificationToken = null;
+            }
+            else
+            {
+                user.EmailVerificationToken = string.Empty; 
+            }
+
+            try
+            {
+                await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.SaveChangesAsync();
+                return Result.Success();
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Failed to verify email for {Email}", request.Email);
+                return Result.Failure("Failed to verify email. Please try again later.");
+            }
         }
+
 
         public async Task<Result> RevokeTokenAsync(string token)
         {

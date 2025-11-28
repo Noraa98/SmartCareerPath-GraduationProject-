@@ -40,6 +40,11 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Configurations.Auth
                 .HasForeignKey<UserProfile>(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany(u => u.PaymentTransactions)
+    .WithOne(p => p.User)
+    .HasForeignKey(p => p.UserId)
+    .OnDelete(DeleteBehavior.Restrict);
+
             // Query Filter for Soft Delete
             builder.HasQueryFilter(u => !u.IsDeleted);
         }

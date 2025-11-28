@@ -97,6 +97,7 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data
         public DbSet<UserSubscription> UserSubscriptions { get; set; }
         public DbSet<TokenUsage> TokenUsage { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<RefundRequest> RefundRequests { get; set; }
         #endregion
 
         #region DbSets - Notifications & Recommendations
@@ -109,6 +110,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data
         public DbSet<SystemConfig> SystemConfigs { get; set; }
         #endregion
 
+       
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -120,6 +123,7 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data
             ConfigureGlobalFilters(modelBuilder);
             ConfigureDecimalPrecision(modelBuilder);
             ConfigureStringMaxLengths(modelBuilder);
+            ConfigureDateTimeUtc(modelBuilder);
         }
 
         private void ConfigureGlobalFilters(ModelBuilder modelBuilder)
@@ -163,6 +167,15 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data
             }
         }
 
+        private void ConfigureDateTimeUtc(ModelBuilder modelBuilder)
+        {
+            foreach (var property in modelBuilder.Model.GetEntityTypes()
+                .SelectMany(t => t.GetProperties())
+                .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?)))
+            {
+                property.SetColumnType("datetime2");
+            }
+        }
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // Auto-update timestamps
