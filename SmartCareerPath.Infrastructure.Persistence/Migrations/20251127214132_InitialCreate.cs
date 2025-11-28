@@ -8,20 +8,30 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class IncreaseAuthTokenTokenLength : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Only alter AuthTokens.Token length; other schema already present in database.
-            migrationBuilder.AlterColumn<string>(
-                name: "Token",
-                table: "AuthTokens",
-                type: "nvarchar(max)",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(500)",
-                oldMaxLength: 500);
+            migrationBuilder.CreateTable(
+                name: "AIResponseCache",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    HashKey = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
+                    ResponseText = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    HitCount = table.Column<int>(type: "int", nullable: false),
+                    LastAccessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AIResponseCache", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "CareerPaths",
@@ -1219,17 +1229,30 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     SubscriptionId = table.Column<int>(type: "int", nullable: true),
-                    Provider = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ProviderReference = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Currency = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    ProductType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PaymentMethod = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    MetadataJson = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Provider = table.Column<int>(type: "int", nullable: false, comment: "Payment provider: 1=Stripe, 2=PayPal, 3=Paymob"),
+                    ProviderReference = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false, comment: "External transaction ID from payment provider"),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false, comment: "Payment amount in specified currency"),
+                    Currency = table.Column<int>(type: "int", nullable: false, comment: "Currency code: 1=USD, 2=EGP, 3=EUR, etc."),
+                    ProductType = table.Column<int>(type: "int", nullable: false, comment: "Product type: 1=Interviewer, 2=CV, 3=Bundle, etc."),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 1, comment: "Payment status: 1=Pending, 2=Processing, 3=Completed, etc."),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: true, comment: "Payment method used by customer"),
+                    BillingCycle = table.Column<int>(type: "int", nullable: true),
+                    OriginalAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DiscountCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    CheckoutUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ReceiptUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    WebhookPayload = table.Column<string>(type: "nvarchar(max)", maxLength: 500, nullable: true),
+                    ProviderMetadata = table.Column<string>(type: "nvarchar(max)", maxLength: 500, nullable: true),
+                    FailureReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    FailureCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    RefundReference = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    RefundReason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RefundedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CompletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LastVerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
@@ -1237,13 +1260,13 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_PaymentTransactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PaymentTransactions_UserSubscriptions_SubscriptionId",
+                        name: "FK_PaymentTransactions_UserSubscriptions",
                         column: x => x.SubscriptionId,
                         principalTable: "UserSubscriptions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_PaymentTransactions_Users_UserId",
+                        name: "FK_PaymentTransactions_Users",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -1317,6 +1340,52 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefundRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PaymentTransactionId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RefundAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Currency = table.Column<int>(type: "int", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
+                    ReviewedByAdminId = table.Column<int>(type: "int", nullable: true),
+                    AdminNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    ProviderRefundReference = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    ErrorMessage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RequestedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    ReviewedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefundRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefundRequests_Admins",
+                        column: x => x.ReviewedByAdminId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_RefundRequests_PaymentTransactions",
+                        column: x => x.PaymentTransactionId,
+                        principalTable: "PaymentTransactions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_RefundRequests_Users",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1611,9 +1680,27 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PaymentTransactions_CompletedAt",
+                table: "PaymentTransactions",
+                column: "CompletedAt",
+                filter: "[CompletedAt] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PaymentTransactions_ProviderReference",
                 table: "PaymentTransactions",
-                column: "ProviderReference");
+                column: "ProviderReference",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentTransactions_Status",
+                table: "PaymentTransactions",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentTransactions_Status_ExpiresAt",
+                table: "PaymentTransactions",
+                columns: new[] { "Status", "ExpiresAt" },
+                filter: "[ExpiresAt] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PaymentTransactions_SubscriptionId",
@@ -1624,6 +1711,11 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 name: "IX_PaymentTransactions_UserId",
                 table: "PaymentTransactions",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PaymentTransactions_UserId_Status",
+                table: "PaymentTransactions",
+                columns: new[] { "UserId", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuizAnswers_QuestionId",
@@ -1671,6 +1763,31 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 name: "IX_QuizSkills_SkillId",
                 table: "QuizSkills",
                 column: "SkillId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_PaymentTransactionId",
+                table: "RefundRequests",
+                column: "PaymentTransactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_ReviewedByAdminId",
+                table: "RefundRequests",
+                column: "ReviewedByAdminId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_Status",
+                table: "RefundRequests",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_Status_RequestedAt",
+                table: "RefundRequests",
+                columns: new[] { "Status", "RequestedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefundRequests_UserId",
+                table: "RefundRequests",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ResumeKeywords_ResumeId",
@@ -1808,14 +1925,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-                migrationBuilder.AlterColumn<string>(
-                    name: "Token",
-                    table: "AuthTokens",
-                    type: "nvarchar(500)",
-                    maxLength: 500,
-                    nullable: false,
-                    oldClrType: typeof(string),
-                    oldType: "nvarchar(max)");
+            migrationBuilder.DropTable(
+                name: "AIResponseCache");
 
             migrationBuilder.DropTable(
                 name: "ApplicationStatusHistory");
@@ -1854,9 +1965,6 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
-                name: "PaymentTransactions");
-
-            migrationBuilder.DropTable(
                 name: "QuizAnswers");
 
             migrationBuilder.DropTable(
@@ -1864,6 +1972,9 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "QuizSkills");
+
+            migrationBuilder.DropTable(
+                name: "RefundRequests");
 
             migrationBuilder.DropTable(
                 name: "ResumeKeywords");
@@ -1905,13 +2016,13 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 name: "InterviewSessions");
 
             migrationBuilder.DropTable(
-                name: "UserSubscriptions");
-
-            migrationBuilder.DropTable(
                 name: "QuizSessions");
 
             migrationBuilder.DropTable(
                 name: "QuizQuestions");
+
+            migrationBuilder.DropTable(
+                name: "PaymentTransactions");
 
             migrationBuilder.DropTable(
                 name: "AIRequests");
@@ -1935,10 +2046,10 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                 name: "JobApplications");
 
             migrationBuilder.DropTable(
-                name: "SubscriptionPlans");
+                name: "Quizzes");
 
             migrationBuilder.DropTable(
-                name: "Quizzes");
+                name: "UserSubscriptions");
 
             migrationBuilder.DropTable(
                 name: "CareerPathSteps");
@@ -1948,6 +2059,9 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Resumes");
+
+            migrationBuilder.DropTable(
+                name: "SubscriptionPlans");
 
             migrationBuilder.DropTable(
                 name: "CareerPaths");

@@ -4,6 +4,7 @@ using SmartCareerPath.Domain.Entities.CareerPath;
 using SmartCareerPath.Domain.Entities.InterviewSystem;
 using SmartCareerPath.Domain.Entities.JobPostingAndMatching;
 using SmartCareerPath.Domain.Entities.NotificationsLogsAndConfig;
+using SmartCareerPath.Domain.Entities.Payments;
 using SmartCareerPath.Domain.Entities.ProfileAndInterests;
 using SmartCareerPath.Domain.Entities.Quiz;
 using SmartCareerPath.Domain.Entities.ResumeAndParsing;
@@ -60,6 +61,10 @@ namespace SmartCareerPath.Domain.Entities.Auth
         public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
         public ICollection<UserRecommendation> UserRecommendations { get; set; } = new List<UserRecommendation>();
         public ICollection<JobPosting> JobPostings { get; set; } = new List<JobPosting>();
+
+        // public virtual UserSubscription? UserSubscription { get; set; }
+        public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+
     }
 
 

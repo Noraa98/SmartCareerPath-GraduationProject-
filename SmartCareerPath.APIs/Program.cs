@@ -35,13 +35,12 @@ namespace SmartCareerPath.APIs
 
 
 
-            // ============================================================
+            
             // 1) Register Services
-            // ============================================================
-
             // Application (MediatR, Validators, AutoMapper, Pipeline Behaviors)
             builder.Services.AddApplication();
-
+            // Add Payment Services
+            builder.Services.AddPaymentServices();
             // Infrastructure (DbContext, Repositories, Unit of Work)
             builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -121,36 +120,41 @@ namespace SmartCareerPath.APIs
             // Enable OpenAPI endpoint
             builder.Services.AddOpenApi();
 
-            // ============================================================
+           
             // 2) Build App
-            // ============================================================
-
             var app = builder.Build();
 
-            // ============================================================
+            
             // 3) Auto Database Creation (async, non-blocking)
-            // ============================================================
-
-            // Initialize database in the background to avoid blocking startup
-            _ = Task.Run(async () =>
+            /// Initialize database in the background to avoid blocking startup
+            ///_ = Task.Run(async () =>
+            ///{
+            ///    try
+            ///    {
+            ///        using (var scope = app.Services.CreateScope())
+            ///        {
+            ///            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            ///            await context.Database.EnsureCreatedAsync();
+            ///        }
+            ///    }
+            ///    catch (Exception ex)
+            ///    {
+            ///        Console.WriteLine($"Database initialization error: {ex.Message}");
+            ///    }
+            ///});
+            
+            
+            // Run pending migrations automatically
+            using (var scope = app.Services.CreateScope())
             {
-                try
-                {
-                    using (var scope = app.Services.CreateScope())
-                    {
-                        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                        await context.Database.EnsureCreatedAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Database initialization error: {ex.Message}");
-                }
-            });
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await context.Database.MigrateAsync();
+            }
 
-            // ============================================================
+
+            
+
             // 4) Configure Pipeline
-            // ============================================================
 
             if (app.Environment.IsDevelopment())
             {

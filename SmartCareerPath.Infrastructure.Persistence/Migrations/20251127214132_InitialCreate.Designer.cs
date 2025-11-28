@@ -12,8 +12,8 @@ using SmartCareerPath.Infrastructure.Persistence.Data;
 namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251127104320_IncreaseAuthTokenTokenLength")]
-    partial class IncreaseAuthTokenTokenLength
+    [Migration("20251127214132_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1527,59 +1527,197 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasComment("Payment amount in specified currency");
+
+                    b.Property<int?>("BillingCycle")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CheckoutUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int")
+                        .HasComment("Currency code: 1=USD, 2=EGP, 3=EUR, etc.");
+
+                    b.Property<string>("DiscountCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
+                    b.Property<string>("FailureCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("FailureReason")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("MetadataJson")
-                        .IsRequired()
+                    b.Property<DateTime?>("LastVerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("OriginalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("PaymentMethod")
+                        .HasColumnType("int")
+                        .HasComment("Payment method used by customer");
+
+                    b.Property<int>("ProductType")
+                        .HasColumnType("int")
+                        .HasComment("Product type: 1=Interviewer, 2=CV, 3=Bundle, etc.");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("int")
+                        .HasComment("Payment provider: 1=Stripe, 2=PayPal, 3=Paymob");
+
+                    b.Property<string>("ProviderMetadata")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ProductType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Provider")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProviderReference")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasComment("External transaction ID from payment provider");
+
+                    b.Property<string>("ReceiptUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RefundReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RefundReference")
+                        .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasComment("Payment status: 1=Pending, 2=Processing, 3=Completed, etc.");
 
                     b.Property<int?>("SubscriptionId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("TaxAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WebhookPayload")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompletedAt")
+                        .HasDatabaseName("IX_PaymentTransactions_CompletedAt")
+                        .HasFilter("[CompletedAt] IS NOT NULL");
+
+                    b.HasIndex("ProviderReference")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PaymentTransactions_ProviderReference");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_PaymentTransactions_Status");
+
+                    b.HasIndex("SubscriptionId");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_PaymentTransactions_UserId");
+
+                    b.HasIndex("Status", "ExpiresAt")
+                        .HasDatabaseName("IX_PaymentTransactions_Status_ExpiresAt")
+                        .HasFilter("[ExpiresAt] IS NOT NULL");
+
+                    b.HasIndex("UserId", "Status")
+                        .HasDatabaseName("IX_PaymentTransactions_UserId_Status");
+
+                    b.ToTable("PaymentTransactions", (string)null);
+                });
+
+            modelBuilder.Entity("SmartCareerPath.Domain.Entities.Payments.RefundRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Currency")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PaymentTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProviderRefundReference")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReviewedByAdminId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -1589,13 +1727,21 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProviderReference");
+                    b.HasIndex("PaymentTransactionId")
+                        .HasDatabaseName("IX_RefundRequests_PaymentTransactionId");
 
-                    b.HasIndex("SubscriptionId");
+                    b.HasIndex("ReviewedByAdminId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_RefundRequests_Status");
 
-                    b.ToTable("PaymentTransactions", (string)null);
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_RefundRequests_UserId");
+
+                    b.HasIndex("Status", "RequestedAt")
+                        .HasDatabaseName("IX_RefundRequests_Status_RequestedAt");
+
+                    b.ToTable("RefundRequests", (string)null);
                 });
 
             modelBuilder.Entity("SmartCareerPath.Domain.Entities.ProfileAndInterests.Interest", b =>
@@ -2928,15 +3074,46 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                     b.HasOne("SmartCareerPath.Domain.Entities.SubscriptionsAndBilling.UserSubscription", "Subscription")
                         .WithMany("Payments")
                         .HasForeignKey("SubscriptionId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_PaymentTransactions_UserSubscriptions");
+
+                    b.HasOne("SmartCareerPath.Domain.Entities.Auth.User", "User")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_PaymentTransactions_Users");
+
+                    b.Navigation("Subscription");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SmartCareerPath.Domain.Entities.Payments.RefundRequest", b =>
+                {
+                    b.HasOne("SmartCareerPath.Domain.Entities.Payments.PaymentTransaction", "PaymentTransaction")
+                        .WithMany()
+                        .HasForeignKey("PaymentTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_RefundRequests_PaymentTransactions");
+
+                    b.HasOne("SmartCareerPath.Domain.Entities.Auth.User", "ReviewedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("ReviewedByAdminId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_RefundRequests_Admins");
 
                     b.HasOne("SmartCareerPath.Domain.Entities.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("FK_RefundRequests_Users");
 
-                    b.Navigation("Subscription");
+                    b.Navigation("PaymentTransaction");
+
+                    b.Navigation("ReviewedByAdmin");
 
                     b.Navigation("User");
                 });
@@ -3200,6 +3377,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Migrations
                     b.Navigation("JobPostings");
 
                     b.Navigation("Notifications");
+
+                    b.Navigation("PaymentTransactions");
 
                     b.Navigation("Profile")
                         .IsRequired();

@@ -23,7 +23,7 @@ namespace SmartCareerPath.Domain.Entities.SubscriptionsAndBilling
         public bool AutoRenew { get; set; } = true;
 
         public DateTime? CancelledAt { get; set; }
-        public string CancellationReason { get; set; }
+        public string? CancellationReason { get; set; }
 
         public int AIRequestsUsed { get; set; }
         public int ResumeParsingUsed { get; set; }

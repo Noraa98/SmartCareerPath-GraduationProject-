@@ -22,9 +22,9 @@ namespace SmartCareerPath.Domain.Entities.Auth
         public DateTime? RevokedAt { get; set; }
 
         [MaxLength(50)]
-        public string DeviceInfo { get; set; }
+        public string? DeviceInfo { get; set; }
 
         [MaxLength(45)]
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
     }
 }

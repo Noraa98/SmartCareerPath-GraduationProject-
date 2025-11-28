@@ -18,9 +18,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             _authService = authService;
         }
 
-        /// <summary>
-        /// Register a new user
-        /// </summary>
+        
+        // Register a new user
         [HttpPost("register")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponseDTO), 200)]
@@ -38,9 +37,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(result.Value);
         }
 
-        /// <summary>
-        /// Login with email and password
-        /// </summary>
+       
+        // Login with email and password
         [HttpPost("login")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponseDTO), 200)]
@@ -59,9 +57,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(result.Value);
         }
 
-        /// <summary>
-        /// Refresh access token using refresh token
-        /// </summary>
+        
+        // Refresh access token using refresh token
         [HttpPost("refresh-token")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(AuthResponseDTO), 200)]
@@ -79,9 +76,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(result.Value);
         }
 
-        /// <summary>
-        /// Logout current user (revoke tokens)
-        /// </summary>
+   
+        // Logout current user (revoke tokens)
         [HttpPost("logout")]
         [Authorize]
         [ProducesResponseType(200)]
@@ -101,9 +97,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(new { message = "Logged out successfully" });
         }
 
-        /// <summary>
-        /// Change password for authenticated user
-        /// </summary>
+       
+        // Change password for authenticated user
         [HttpPost("change-password")]
         [Authorize]
         [ProducesResponseType(200)]
@@ -127,9 +122,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(new { message = "Password changed successfully. Please login again." });
         }
 
-        /// <summary>
-        /// Request password reset email
-        /// </summary>
+        
+        // Request password reset email
         [HttpPost("forgot-password")]
         [AllowAnonymous]
         [ProducesResponseType(200)]
@@ -144,9 +138,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(new { message = "If the email exists, a password reset link has been sent." });
         }
 
-        /// <summary>
-        /// Reset password using token from email
-        /// </summary>
+        
+        // Reset password using token from email
         [HttpPost("reset-password")]
         [AllowAnonymous]
         [ProducesResponseType(200)]
@@ -164,9 +157,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(new { message = "Password reset successfully. You can now login with your new password." });
         }
 
-        /// <summary>
-        /// Verify email using token from email
-        /// </summary>
+       
+        // Verify email using token from email
         [HttpPost("verify-email")]
         [AllowAnonymous]
         [ProducesResponseType(200)]
@@ -184,9 +176,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             return Ok(new { message = "Email verified successfully!" });
         }
 
-        /// <summary>
-        /// Get current authenticated user info
-        /// </summary>
+        
+        // Get current authenticated user info
         [HttpGet("me")]
         [Authorize]
         [ProducesResponseType(typeof(UserDto), 200)]
@@ -208,9 +199,8 @@ namespace SmartCareerPath.APIs.Controllers.Auth
             });
         }
 
-        /// <summary>
-        /// Health check endpoint
-        /// </summary>
+        
+        // Health check endpoint
         [HttpGet("health")]
         [AllowAnonymous]
         public IActionResult Health()

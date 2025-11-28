@@ -8,11 +8,14 @@ namespace SmartCareerPath.Domain.Enums
 {
     public enum PaymentStatus
     {
+        Unknown = 0,
         Pending = 1,
         Processing = 2,
         Completed = 3,
         Failed = 4,
         Refunded = 5,
-        Cancelled = 6
+        Cancelled = 6,
+        Verifying = 7,
+        Expired = 8
     }
 }
