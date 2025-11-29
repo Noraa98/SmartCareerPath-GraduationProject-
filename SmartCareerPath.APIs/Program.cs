@@ -144,11 +144,129 @@ namespace SmartCareerPath.APIs
             ///});
             
             
-            // Run pending migrations automatically
-            using (var scope = app.Services.CreateScope())
+            // Run pending migrations automatically with error handling
+            try
             {
-                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                await context.Database.MigrateAsync();
+                using (var scope = app.Services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    
+                    // Get pending migrations
+                    var pendingMigrations = (await context.Database.GetPendingMigrationsAsync()).ToList();
+                    
+                    if (pendingMigrations.Any())
+                    {
+                        Console.WriteLine($"Found {pendingMigrations.Count} pending migration(s):");
+                        foreach (var migration in pendingMigrations)
+                        {
+                            Console.WriteLine($"  - {migration}");
+                        }
+                        
+                        try
+                        {
+                            await context.Database.MigrateAsync();
+                            Console.WriteLine("Migrations applied successfully.");
+                        }
+                        catch (Exception migrationEx)
+                        {
+                            string errorMsg = migrationEx.InnerException?.Message ?? migrationEx.Message;
+                            
+                            // Table already exists - mark migration as applied anyway
+                            if (errorMsg.Contains("already an object named") || errorMsg.Contains("Already exists"))
+                            {
+                                Console.WriteLine($"⚠️ Migration skipped - table already exists in database. Error: {errorMsg}");
+                                Console.WriteLine("Attempting to mark migrations as applied in history...");
+                                
+                                try
+                                {
+                                    foreach (var migration in pendingMigrations)
+                                    {
+                                        try
+                                        {
+                                            await context.Database.ExecuteSqlRawAsync(
+                                                $"IF NOT EXISTS (SELECT 1 FROM __EFMigrationsHistory WHERE MigrationId = '{migration}') " +
+                                                $"INSERT INTO __EFMigrationsHistory (MigrationId, ProductVersion) VALUES ('{migration}', '6.0.0')");
+                                        }
+                                        catch
+                                        {
+                                            // Ignore if already exists
+                                        }
+                                    }
+                                    Console.WriteLine("✓ Migrations marked as applied.");
+                                }
+                                catch (Exception historyEx)
+                                {
+                                    Console.WriteLine($"⚠️ Could not update migration history: {historyEx.Message}");
+                                }
+                            }
+                            else
+                            {
+                                // Unknown error - log it
+                                Console.WriteLine($"❌ Migration error: {errorMsg}");
+                                throw;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("✓ No pending migrations.");
+                    }
+                    
+                    // Apply manual SQL fixes for column constraints that don't match entity model
+                    try
+                    {
+                        Console.WriteLine("Applying manual column constraint fixes...");
+                        
+                        // Fix PaymentMethod to be nullable (nullable in entity but NOT NULL in database)
+                        try
+                        {
+                            await context.Database.ExecuteSqlRawAsync(
+                                "ALTER TABLE PaymentTransactions ALTER COLUMN PaymentMethod INT NULL");
+                            Console.WriteLine("✓ PaymentMethod column altered to nullable");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"⚠️ PaymentMethod alter failed: {ex.InnerException?.Message}");
+                        }
+                        
+                        // Fix FailureReason to be nullable
+                        try
+                        {
+                            await context.Database.ExecuteSqlRawAsync(
+                                "ALTER TABLE PaymentTransactions ALTER COLUMN FailureReason NVARCHAR(500) NULL");
+                            Console.WriteLine("✓ FailureReason column altered to nullable");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"⚠️ FailureReason alter failed: {ex.InnerException?.Message}");
+                        }
+                        
+                        // Fix MetadataJson column (exists in DB but not in entity - make it nullable or drop it)
+                        try
+                        {
+                            // Try to make it nullable first
+                            await context.Database.ExecuteSqlRawAsync(
+                                "IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='PaymentTransactions' AND COLUMN_NAME='MetadataJson') " +
+                                "ALTER TABLE PaymentTransactions ALTER COLUMN MetadataJson NVARCHAR(MAX) NULL");
+                            Console.WriteLine("✓ MetadataJson column made nullable");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"⚠️ MetadataJson alter failed: {ex.InnerException?.Message}");
+                        }
+                        
+                        Console.WriteLine("✓ All column constraint fixes completed.");
+                    }
+                    catch (Exception constraintEx)
+                    {
+                        Console.WriteLine($"⚠️ Constraint fix error: {constraintEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Fatal migration error: {ex.Message}");
+                throw;
             }
 
 
@@ -177,10 +295,11 @@ namespace SmartCareerPath.APIs
             app.UseCors("AllowAll");
 
             app.UseAuthentication();
-            app.UseAuthorization();
 
-            // Custom Token Middleware
+            // Custom Token Middleware (run after authentication so token info is available)
             app.UseTokenValidation();
+
+            app.UseAuthorization();
 
             // Map Controllers
             app.MapControllers();

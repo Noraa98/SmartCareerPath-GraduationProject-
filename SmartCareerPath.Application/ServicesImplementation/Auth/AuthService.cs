@@ -3,6 +3,7 @@ using SmartCareerPath.Application.Abstraction.DTOs.RequestDTOs;
 using Microsoft.Extensions.Logging;
 using SmartCareerPath.Application.Abstraction.DTOs.ResponseDTOs;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Auth;
+using SmartCareerPath.Application.Abstraction.ServicesContracts.Email;
 using SmartCareerPath.Domain.Common.ResultPattern;
 using SmartCareerPath.Domain.Contracts;
 using SmartCareerPath.Domain.Entities.Auth;
@@ -18,19 +19,22 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
         private readonly ITokenService _tokenService;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthService> _logger;
+        private readonly IEmailService _emailService;
 
         public AuthService(
             IUnitOfWork unitOfWork,
             IPasswordService passwordService,
             ITokenService tokenService,
             ApplicationDbContext context,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _passwordService = passwordService;
             _tokenService = tokenService;
             _context = context;
             _logger = logger;
+            _emailService = emailService;
         }
 
         public async Task<Result<AuthResponseDTO>> RegisterAsync(RegisterRequestDTO request)
@@ -118,8 +122,8 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
                     RefreshToken = refreshToken,
                     ExpiresAt = _tokenService.GetAccessTokenExpiration(),
                     RefreshTokenExpiresAt = _tokenService.GetRefreshTokenExpiration(),
-                    DeviceInfo = null,      
-                    IpAddress = null,
+                    DeviceInfo = "",      
+                    IpAddress = "",
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -128,8 +132,17 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
 
                 await _unitOfWork.CommitTransactionAsync();
 
-                // TODO: Send verification email
-
+                // Send verification email (do not block response)
+                try
+                {
+                    await _emailService.SendEmailVerificationAsync(user.Email, user.FullName, user.EmailVerificationToken);
+                    _logger.LogInformation($"Verification email sent to {user.Email} at {DateTime.UtcNow}");
+                }
+                catch (Exception ex)
+                {
+                    // Log but don't fail registration if email sending fails
+                    _logger.LogWarning(ex, "Failed to send verification email to {Email}", user.Email);
+                }
                 return Result<AuthResponseDTO>.Success(new AuthResponseDTO
                 {
                     UserId = user.Id,
@@ -174,6 +187,10 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
             // Check if account is active
             if (!user.IsActive)
                 return Result<AuthResponseDTO>.Failure("Account is deactivated");
+
+            // Require email verification before allowing login
+            if (!user.IsEmailVerified)
+                return Result<AuthResponseDTO>.Failure("Email is not verified. Please verify your email before logging in.");
 
             // Verify password
             if (!_passwordService.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
@@ -351,7 +368,10 @@ namespace SmartCareerPath.Application.ServicesImplementation.Auth
             // Generate reset token
             var resetToken = await _tokenService.GeneratePasswordResetTokenAsync(user.Email);
 
-            // TODO: Send reset email with token
+            // Send reset email with token
+            await _emailService.SendPasswordResetEmailAsync(user.Email, user.FullName, resetToken);
+
+            _logger.LogInformation($"Password reset email sent to {user.Email} at {DateTime.UtcNow}");
 
             return Result.Success();
         }

@@ -28,7 +28,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data.Configurations.Auth
             builder.HasData(
       new Role { Id = 1, Name = "User", Description = "Regular user", CreatedAt = new DateTime(2025, 1, 1) },
       new Role { Id = 2, Name = "Employer", Description = "Job poster", CreatedAt = new DateTime(2025, 1, 1) },
-      new Role { Id = 3, Name = "Admin", Description = "System administrator", CreatedAt = new DateTime(2025, 1, 1) }
+      new Role { Id = 3, Name = "Admin", Description = "System administrator", CreatedAt = new DateTime(2025, 1, 1) },
+      new Role { Id = 4, Name = "Premium", Description = "Premium subscriber with enhanced features", CreatedAt = new DateTime(2025, 1, 1) }
   );
 
         }

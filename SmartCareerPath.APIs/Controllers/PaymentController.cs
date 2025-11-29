@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using SmartCareerPath.Application.Abstraction.DTOs.Payment;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Payment;
 
@@ -32,14 +33,124 @@ namespace SmartCareerPath.APIs.Controllers
             [FromBody] CreatePaymentSessionRequest request,
             CancellationToken cancellationToken)
         {
-            var result = await _paymentService.CreatePaymentSessionAsync(request, cancellationToken);
+            _logger.LogInformation("=== CreatePaymentSession Request Started ===");
 
-            if (result.IsFailure)
+            // Log incoming request body
+            if (request != null)
             {
-                return BadRequest(new { error = result.Error });
+                _logger.LogInformation(
+                    "Request payload: UserId={UserId}, ProductType={ProductType}, PaymentProvider={PaymentProvider}, Currency={Currency}, BillingCycle={BillingCycle}, SuccessUrl={SuccessUrl}, CancelUrl={CancelUrl}",
+                    request.UserId, request.ProductType, request.PaymentProvider, request.Currency,
+                    request.BillingCycle, request.SuccessUrl, request.CancelUrl);
             }
 
-            return Ok(result.Value);
+            // Log model state validation errors
+            if (!ModelState.IsValid)
+            {
+                _logger.LogWarning("Model validation failed");
+                var validationErrors = new Dictionary<string, List<string>>();
+
+                foreach (var kvp in ModelState)
+                {
+                    var fieldName = kvp.Key;
+                    var modelState = kvp.Value;
+                    
+                    foreach (var error in modelState.Errors)
+                    {
+                        var errorMessage = error.ErrorMessage;
+                        
+                        _logger.LogWarning("Validation error - Field: {field}, Message: {message}", fieldName, errorMessage);
+
+                        if (!validationErrors.ContainsKey(fieldName))
+                        {
+                            validationErrors[fieldName] = new List<string>();
+                        }
+                        validationErrors[fieldName].Add(errorMessage);
+                    }
+                }
+
+                return BadRequest(new
+                {
+                    error = "Validation failed",
+                    details = validationErrors,
+                    message = "One or more validation errors occurred"
+                });
+            }
+
+            // Log Authorization header for debugging
+            var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+            _logger.LogInformation("Authorization header present: {hasAuth}", !string.IsNullOrEmpty(authHeader));
+
+            string token = null;
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                token = authHeader.Substring("Bearer ".Length).Trim();
+                _logger.LogInformation("Extracted token length: {len}", token.Length);
+            }
+
+            // If authenticated, log claims and try to extract user id from token claims
+            if (User?.Identity?.IsAuthenticated == true)
+            {
+                _logger.LogInformation("User is authenticated");
+                foreach (var claim in User.Claims)
+                {
+                    _logger.LogInformation("Claim: {type} = {value}", claim.Type, claim.Value);
+                }
+
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("sub") ?? User.FindFirst("nameid");
+                if (idClaim != null && int.TryParse(idClaim.Value, out var parsedUserId) && parsedUserId > 0)
+                {
+                    request.UserId = parsedUserId; // prefer token user id
+                    _logger.LogInformation("Using userId from token: {userId}", parsedUserId);
+                }
+            }
+            else
+            {
+                // No authenticated user - return structured JSON error
+                _logger.LogWarning("User not authenticated");
+                return Unauthorized(new { error = "Unauthorized", message = "Missing or invalid token" });
+            }
+
+            try
+            {
+                _logger.LogInformation("Calling PaymentService.CreatePaymentSessionAsync with request: UserId={UserId}, ProductType={ProductType}, PaymentProvider={PaymentProvider}",
+                    request.UserId, request.ProductType, request.PaymentProvider);
+
+                var result = await _paymentService.CreatePaymentSessionAsync(request, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    _logger.LogError("Payment service returned failure: {error}", result.Error);
+                    return BadRequest(new
+                    {
+                        error = "Payment session creation failed",
+                        details = new { reason = result.Error },
+                        message = result.Error
+                    });
+                }
+
+                _logger.LogInformation("Payment session created successfully. TransactionId: {transactionId}",
+                    result.Value?.TransactionId);
+
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while creating payment session. Exception type: {exceptionType}, Message: {message}",
+                    ex.GetType().Name, ex.Message);
+
+                return BadRequest(new
+                {
+                    error = "An exception occurred",
+                    details = new
+                    {
+                        exceptionType = ex.GetType().Name,
+                        message = ex.Message,
+                        stackTrace = ex.StackTrace
+                    },
+                    message = "Payment session creation failed due to an unexpected error"
+                });
+            }
         }
 
 

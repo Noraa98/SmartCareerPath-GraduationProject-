@@ -57,6 +57,13 @@ namespace SmartCareerPath.Application.ServicesImplementation.Email
             var subject = "Welcome to Smart Career Path! 🎉";
             var verificationUrl = $"{_emailSettings.FrontendUrl}/verify-email?token={verificationToken}&email={to}";
 
+            // For testing: log the verification URL so we can capture the token during local tests
+            try
+            {
+                Console.WriteLine($"[EMAIL-DEBUG] Welcome verification URL for {to}: {verificationUrl}");
+            }
+            catch { }
+
             var body = GetWelcomeEmailTemplate(userName, verificationUrl);
 
             await SendEmailAsync(to, subject, body);
@@ -67,6 +74,13 @@ namespace SmartCareerPath.Application.ServicesImplementation.Email
             var subject = "Verify Your Email Address";
             var verificationUrl = $"{_emailSettings.FrontendUrl}/verify-email?token={verificationToken}&email={to}";
 
+            // For testing: log the verification URL so we can capture the token during local tests
+            try
+            {
+                Console.WriteLine($"[EMAIL-DEBUG] Verification URL for {to}: {verificationUrl}");
+            }
+            catch { }
+
             var body = GetEmailVerificationTemplate(userName, verificationUrl);
 
             await SendEmailAsync(to, subject, body);
@@ -76,6 +90,13 @@ namespace SmartCareerPath.Application.ServicesImplementation.Email
         {
             var subject = "Reset Your Password";
             var resetUrl = $"{_emailSettings.FrontendUrl}/reset-password?token={resetToken}&email={to}";
+
+            // For testing: log the reset URL so we can capture the token during local tests
+            try
+            {
+                Console.WriteLine($"[EMAIL-DEBUG] Password reset URL for {to}: {resetUrl}");
+            }
+            catch { }
 
             var body = GetPasswordResetTemplate(userName, resetUrl);
 

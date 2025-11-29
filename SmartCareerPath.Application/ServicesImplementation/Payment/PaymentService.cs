@@ -45,45 +45,73 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
             try
             {
                 _logger.LogInformation(
-                    "Creating payment session for user {UserId}, product {ProductType}",
-                    request.UserId, request.ProductType);
+                    "=== PaymentService.CreatePaymentSessionAsync Started === UserId={UserId}, ProductType={ProductType}, PaymentProvider={PaymentProvider}, Currency={Currency}, BillingCycle={BillingCycle}",
+                    request.UserId, request.ProductType, request.PaymentProvider, request.Currency, request.BillingCycle);
 
                 // 1. Validate user exists
+                _logger.LogInformation("Step 1: Validating user exists. UserId={UserId}", request.UserId);
                 var user = await _unitOfWork.Users.GetByIdAsync(request.UserId);
                 if (user == null)
                 {
-                    return Result<PaymentSessionResponse>.Failure("User not found");
+                    _logger.LogError("User not found. UserId={UserId}", request.UserId);
+                    return Result<PaymentSessionResponse>.Failure($"User not found with ID {request.UserId}");
                 }
+                _logger.LogInformation("User found: {UserEmail}", user.Email);
 
                 // 2. Get pricing
+                _logger.LogInformation("Step 2: Converting request values to enums");
                 var productType = (ProductType)request.ProductType;
                 var currency = (Currency)request.Currency;
                 var billingCycle = request.BillingCycle.HasValue
                     ? (BillingCycle)request.BillingCycle.Value
                     : BillingCycle.PayPerUse;
 
+                _logger.LogInformation("Converted enums: ProductType={ProductType}, Currency={Currency}, BillingCycle={BillingCycle}",
+                    productType, currency, billingCycle);
+
                 decimal amount;
                 try
                 {
+                    _logger.LogInformation("Getting price from PaymentSeeder for ProductType={ProductType}, Currency={Currency}, BillingCycle={BillingCycle}",
+                        productType, currency, billingCycle);
                     amount = PaymentSeeder.PricingConfig.GetPrice(productType, currency, billingCycle);
+                    _logger.LogInformation("Price retrieved: {Amount} {Currency}", amount, currency);
                 }
                 catch (ArgumentException ex)
                 {
-                    return Result<PaymentSessionResponse>.Failure(ex.Message);
+                    _logger.LogError(ex, "Failed to get price from PaymentSeeder. ProductType={ProductType}, Currency={Currency}, BillingCycle={BillingCycle}",
+                        productType, currency, billingCycle);
+                    return Result<PaymentSessionResponse>.Failure($"Pricing error: {ex.Message}");
                 }
 
                 // 3. Apply discount if provided
                 if (!string.IsNullOrEmpty(request.DiscountCode))
                 {
+                    _logger.LogInformation("Step 3: Processing discount code: {Code}", request.DiscountCode);
                     // TODO: Implement discount code validation
-                    _logger.LogInformation("Discount code {Code} applied", request.DiscountCode);
+                }
+                else
+                {
+                    _logger.LogInformation("Step 3: No discount code provided");
                 }
 
                 // 4. Get payment strategy
+                _logger.LogInformation("Step 4: Getting payment strategy for provider: {Provider}", request.PaymentProvider);
                 var provider = (PaymentProvider)request.PaymentProvider;
-                var strategy = _strategyFactory.GetStrategy(provider);
+                IPaymentStrategy strategy;
+                try
+                {
+                    strategy = _strategyFactory.GetStrategy(provider);
+                    _logger.LogInformation("Payment strategy obtained for provider: {Provider}", provider);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to get payment strategy for provider: {Provider}", provider);
+                    return Result<PaymentSessionResponse>.Failure($"Payment provider error: {ex.Message}");
+                }
 
                 // 5. Create payment session with provider
+                _logger.LogInformation("Step 5: Creating payment session parameters");
                 var sessionParams = new CreatePaymentSessionParams
                 {
                     UserId = request.UserId,
@@ -103,15 +131,23 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
                 }
                 };
 
+                _logger.LogInformation("Calling payment provider to create session. Amount={Amount}, CustomerEmail={CustomerEmail}, SuccessUrl={SuccessUrl}, CancelUrl={CancelUrl}",
+                    amount, user.Email, request.SuccessUrl, request.CancelUrl);
+
                 var sessionResult = await strategy.CreatePaymentSessionAsync(sessionParams, cancellationToken);
 
                 if (!sessionResult.Success)
                 {
+                    _logger.LogError("Payment provider session creation failed. ErrorMessage={ErrorMessage}", sessionResult.ErrorMessage);
                     return Result<PaymentSessionResponse>.Failure(
-                        sessionResult.ErrorMessage ?? "Failed to create payment session");
+                        sessionResult.ErrorMessage ?? "Failed to create payment session with payment provider");
                 }
 
+                _logger.LogInformation("Payment session created with provider. ProviderReference={ProviderReference}, CheckoutUrl={CheckoutUrl}",
+                    sessionResult.ProviderReference, sessionResult.CheckoutUrl);
+
                 // 6. Save payment transaction to database
+                _logger.LogInformation("Step 6: Saving payment transaction to database");
                 var payment = new PaymentTransaction
                 {
                     UserId = request.UserId,
@@ -128,8 +164,18 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
                     DiscountCode = request.DiscountCode
                 };
 
-                await _unitOfWork.Repository<PaymentTransaction>().AddAsync(payment);
-                await _unitOfWork.SaveChangesAsync();
+                try
+                {
+                    await _unitOfWork.Repository<PaymentTransaction>().AddAsync(payment);
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("Payment transaction saved to database. TransactionId={TransactionId}", payment.Id);
+                }
+                catch (Exception ex)
+                {
+                    string innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
+                    _logger.LogError(ex, "Failed to save payment transaction to database. Exception: {ExceptionMessage}. Inner: {InnerMessage}", ex.Message, innerExceptionMessage);
+                    return Result<PaymentSessionResponse>.Failure($"Database error: {ex.Message}");
+                }
 
                 // 7. Return response
                 var response = new PaymentSessionResponse
@@ -144,15 +190,16 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
                 };
 
                 _logger.LogInformation(
-                    "Payment session created successfully. TransactionId: {TransactionId}",
-                    payment.Id);
+                    "=== Payment session created successfully. TransactionId={TransactionId}, CheckoutUrl={CheckoutUrl} ===",
+                    payment.Id, payment.CheckoutUrl);
 
                 return Result<PaymentSessionResponse>.Success(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating payment session");
-                return Result<PaymentSessionResponse>.Failure("An error occurred while creating payment session");
+                _logger.LogError(ex, "=== EXCEPTION in CreatePaymentSessionAsync. Exception Type: {ExceptionType}, Message: {Message}, StackTrace: {StackTrace} ===",
+                    ex.GetType().Name, ex.Message, ex.StackTrace);
+                return Result<PaymentSessionResponse>.Failure($"An error occurred: {ex.Message}");
             }
         }
 
@@ -355,7 +402,20 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
         {
             _logger.LogInformation("Activating subscription for user {UserId}", payment.UserId);
 
-            
+            // Update user role to Premium
+            var user = await _unitOfWork.Users.GetByIdAsync(payment.UserId);
+            if (user != null)
+            {
+                var premiumRole = await _unitOfWork.Roles.FirstOrDefaultAsync(r => r.Name == "Premium");
+                if (premiumRole != null)
+                {
+                    user.RoleId = premiumRole.Id;
+                    await _unitOfWork.Users.UpdateAsync(user);
+                    await _unitOfWork.SaveChangesAsync();
+                    _logger.LogInformation("User {UserId} role updated to Premium", payment.UserId);
+                }
+            }
+
             var plans = await _unitOfWork.SubscriptionPlans.GetAllAsync();
             SubscriptionPlan defaultPlan;
 
@@ -593,53 +653,70 @@ namespace SmartCareerPath.Application.ServicesImplementation.Payment
             try
             {
                 var currencyEnum = (Currency)currency;
+                // Return a single plan called "Careera Premium" that bundles the AI Interviewer
+                // and the Job Description Parser. Frontend will handle icons/styling.
                 var products = new List<ProductPricingResponse>();
 
-                // Get pricing for each product type
-                foreach (ProductType productType in Enum.GetValues(typeof(ProductType)))
+                // Define base amounts in USD. Frontend/back-end currency conversion can be
+                // improved later; for now amounts are shown using the requested currency label.
+                decimal monthlyUsd = 9.99m;
+                decimal yearlyUsd = 99.99m; // ~17% discount vs monthly * 12
+                decimal lifetimeUsd = 199.99m;
+
+                // If needed, you can extend this to convert amounts based on currency.
+                var tiers = new List<PricingTierResponse>
                 {
-                    var (name, description, features) = PaymentSeeder.ProductInfo.GetProductInfo(productType);
-                    var availableCycles = PaymentSeeder.PricingConfig.GetAvailableBillingCycles(productType);
-
-                    var tiers = new List<PricingTierResponse>();
-
-                    foreach (var cycle in availableCycles)
+                    new PricingTierResponse
                     {
-                        try
-                        {
-                            var price = PaymentSeeder.PricingConfig.GetPrice(productType, currencyEnum, cycle);
-
-                            tiers.Add(new PricingTierResponse
-                            {
-                                BillingCycle = cycle.ToString(),
-                                Amount = price,
-                                Currency = currencyEnum.ToString(),
-                                DisplayAmount = FormatCurrency(price, currencyEnum),
-                                DiscountPercentage = cycle == BillingCycle.Yearly
-                                    ? PaymentSeeder.PricingConfig.GetYearlyDiscountPercentage(productType, currencyEnum)
-                                    : null,
-                                DiscountLabel = cycle == BillingCycle.Yearly ? "Save 17%" : null
-                            });
-                        }
-                        catch
-                        {
-                            // Skip if pricing not configured for this combination
-                            continue;
-                        }
-                    }
-
-                    if (tiers.Any())
+                        BillingCycleId = (int)BillingCycle.Monthly,
+                        BillingCycle = BillingCycle.Monthly.ToString(),
+                        Amount = monthlyUsd,
+                        Currency = currencyEnum.ToString(),
+                        DisplayAmount = FormatCurrency(monthlyUsd, currencyEnum),
+                        DiscountPercentage = null,
+                        DiscountLabel = null
+                    },
+                    new PricingTierResponse
                     {
-                        products.Add(new ProductPricingResponse
-                        {
-                            ProductType = productType.ToString(),
-                            DisplayName = name,
-                            Description = description,
-                            Tiers = tiers,
-                            Features = features
-                        });
+                        BillingCycleId = (int)BillingCycle.Yearly,
+                        BillingCycle = BillingCycle.Yearly.ToString(),
+                        Amount = yearlyUsd,
+                        Currency = currencyEnum.ToString(),
+                        DisplayAmount = FormatCurrency(yearlyUsd, currencyEnum),
+                        DiscountPercentage = 17,
+                        DiscountLabel = "Save 17%"
+                    },
+                    new PricingTierResponse
+                    {
+                        BillingCycleId = (int)BillingCycle.Lifetime,
+                        BillingCycle = BillingCycle.Lifetime.ToString(),
+                        Amount = lifetimeUsd,
+                        Currency = currencyEnum.ToString(),
+                        DisplayAmount = FormatCurrency(lifetimeUsd, currencyEnum),
+                        DiscountPercentage = null,
+                        DiscountLabel = null
                     }
-                }
+                };
+
+                var features = new List<string>
+                {
+                    "Access to AI Interviewer (realistic mock interviews)",
+                    "Job Description Parser — analyze JD and match to your CV",
+                    "Unlimited interview sessions and parsing requests",
+                    "Detailed AI feedback and downloadable reports",
+                    "Priority support and continuous updates",
+                    "Access to advanced scoring and performance insights"
+                };
+
+                products.Add(new ProductPricingResponse
+                {
+                    ProductTypeId = (int)ProductType.BundleSubscription,
+                    ProductType = "CareeraPremium",
+                    DisplayName = "Careera Premium",
+                    Description = "All-in-one premium subscription that includes unlimited access to the AI Interviewer and an advanced Job Description Parser. Improve your interview readiness with realistic mock interviews, get personalized feedback, and quickly analyze job descriptions to tailor your CV and applications.",
+                    Tiers = tiers,
+                    Features = features
+                });
 
                 return await Task.FromResult(Result<List<ProductPricingResponse>>.Success(products));
             }

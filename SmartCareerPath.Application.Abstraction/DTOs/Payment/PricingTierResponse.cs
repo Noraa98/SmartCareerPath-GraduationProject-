@@ -8,6 +8,7 @@ namespace SmartCareerPath.Application.Abstraction.DTOs.Payment
 {
     public class PricingTierResponse
     {
+        public int BillingCycleId { get; set; }
         public required string BillingCycle { get; set; }
         public decimal Amount { get; set; }
         public required string Currency { get; set; }

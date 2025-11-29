@@ -4,6 +4,8 @@ using SmartCareerPath.Application.PipelineBehaviors;
 using System.Reflection;
 using FluentValidation;
 using AutoMapper;
+using SmartCareerPath.Application.Abstraction.ServicesContracts.Email;
+using SmartCareerPath.Application.ServicesImplementation.Email;
 
 
 namespace SmartCareerPath.Application
@@ -27,6 +29,9 @@ namespace SmartCareerPath.Application
 
             // AutoMapper
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+            // Email Service
+            services.AddScoped<IEmailService, EmailService>();
 
             return services;
         }

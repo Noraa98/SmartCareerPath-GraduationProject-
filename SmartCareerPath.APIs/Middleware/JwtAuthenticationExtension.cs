@@ -45,12 +45,44 @@ namespace SmartCareerPath.APIs.Middleware
 
                 options.Events = new JwtBearerEvents
                 {
+                    OnMessageReceived = context =>
+                    {
+                        try
+                        {
+                            var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                            var logger = loggerFactory?.CreateLogger("JwtBearerEvents");
+
+                            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                            if (!string.IsNullOrEmpty(authHeader))
+                            {
+                                var token = authHeader.StartsWith("Bearer ") ? authHeader.Substring("Bearer ".Length) : authHeader;
+                                logger?.LogInformation("OnMessageReceived - Authorization header present. Token length: {len}", token?.Length ?? 0);
+                            }
+                            else
+                            {
+                                logger?.LogInformation("OnMessageReceived - No Authorization header present");
+                            }
+                        }
+                        catch { /* swallow logging errors */ }
+
+                        return Task.CompletedTask;
+                    },
                     OnAuthenticationFailed = context =>
                     {
-                        if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                        try
                         {
-                            context.Response.Headers.Add("Token-Expired", "true");
+                            var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                            var logger = loggerFactory?.CreateLogger("JwtBearerEvents");
+
+                            logger?.LogError(context.Exception, "JWT authentication failed: {message}", context.Exception?.Message);
+
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Add("Token-Expired", "true");
+                            }
                         }
+                        catch { /* swallow logging errors */ }
+
                         return Task.CompletedTask;
                     },
                     OnChallenge = context =>

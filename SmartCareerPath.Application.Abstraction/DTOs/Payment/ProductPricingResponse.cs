@@ -8,6 +8,7 @@ namespace SmartCareerPath.Application.Abstraction.DTOs.Payment
 {
     public class ProductPricingResponse
     {
+        public int ProductTypeId { get; set; }
         public required string ProductType { get; set; }
         public required string DisplayName { get; set; }
         public required string Description { get; set; }
