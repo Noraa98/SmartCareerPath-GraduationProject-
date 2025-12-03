@@ -4,7 +4,7 @@ using System.Security.Claims;
 using SmartCareerPath.Application.Abstraction.DTOs.Payment;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Payment;
 using SmartCareerPath.Application.Abstraction.ServicesContracts.Auth;
-using SmartCareerPath.Domain.Contracts;
+using SmartCareerPath.Application.Abstraction.Contracts.Persistence;
 using SmartCareerPath.Domain.Enums;
 using SmartCareerPath.Domain.Entities.Auth;
 
@@ -185,7 +185,7 @@ namespace SmartCareerPath.APIs.Controllers
 
             // If payment was completed, generate a new JWT token with updated role
             // This allows the frontend to immediately have the Premium role without signing out/in
-            if (response.Status == "Completed" && response.UserId > 0)
+            if (response.Status == "Completed" && response.TransactionId > 0)
             {
                 try
                 {
@@ -194,7 +194,7 @@ namespace SmartCareerPath.APIs.Controllers
                     // The payment service should have fetched the user's updated role.
                     // We need the UserId to get the user and generate a new token.
                     // For now, we'll attempt to get this from the payment transaction or add it to the response.
-                    response.Token = await GenerateUpdatedTokenForPaymentAsync(response.UserId, cancellationToken);
+                    response.Token = await GenerateUpdatedTokenForPaymentAsync(response.TransactionId, cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -217,15 +217,19 @@ namespace SmartCareerPath.APIs.Controllers
                 _logger.LogInformation("Fetching user {UserId} to generate updated token", userId);
                 
                 // Fetch the user to get their email and current role
-                var user = await _unitOfWork.Repository<User>().GetByIdAsync(userId);
+                var user = await _unitOfWork.Repository<AppUser>().GetByIdAsync(userId);
                 if (user == null)
                 {
                     _logger.LogWarning("User {UserId} not found for token generation", userId);
                     return null;
                 }
 
-                // Get the user's current role
-                var roleName = user.Role?.Name ?? "User";
+                // Get the user's current role from the database
+                var userRoles = await _unitOfWork.Repository<AppUserRole>()
+                    .FindAsync(ur => ur.AppUserId == userId);
+                
+                var userRole = userRoles.FirstOrDefault();
+                var roleName = userRole?.Role?.Name ?? "User";
 
                 _logger.LogInformation("Generating new token for user {UserId} with role {RoleName}", userId, roleName);
                 
@@ -351,147 +355,6 @@ namespace SmartCareerPath.APIs.Controllers
             }
 
             return Ok(result.Value);
-        }
-
-
-        // Stripe Redirect Handler - Auto-redirects from Stripe back to Angular payment-success component
-        [HttpGet("stripe/redirect")]
-        [AllowAnonymous]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public IActionResult StripeRedirect([FromQuery] string session_id)
-        {
-            if (string.IsNullOrEmpty(session_id))
-            {
-                _logger.LogWarning("[StripeRedirect] No session_id provided in query string");
-                return Redirect("/paymob/response");
-            }
-
-            _logger.LogInformation("[StripeRedirect] Received redirect with session_id: {SessionId}", session_id);
-            // Attempt to verify payment server-side so user's role is activated immediately.
-            // This also allows us to generate a fresh JWT and inject it into the browser sessionStorage
-            // so the frontend immediately observes the Premium role.
-            string? injectedToken = null;
-            try
-            {
-                var verifyReq = new SmartCareerPath.Application.Abstraction.DTOs.Payment.VerifyPaymentRequest
-                {
-                    ProviderReference = session_id
-                };
-
-                var verifyResultTask = _paymentService.VerifyPaymentAsync(verifyReq, CancellationToken.None);
-                verifyResultTask.Wait();
-                var verifyResult = verifyResultTask.Result;
-
-                if (verifyResult.IsSuccess)
-                {
-                    var resp = verifyResult.Value;
-                    // Generate updated token for frontend if possible
-                    if (resp.UserId > 0 && resp.Status == "Completed")
-                    {
-                        try
-                        {
-                            var tokenTask = GenerateUpdatedTokenForPaymentAsync(resp.UserId, CancellationToken.None);
-                            tokenTask.Wait();
-                            injectedToken = tokenTask.Result;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to generate injected token after verify in StripeRedirect");
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("VerifyPaymentAsync returned failure when called from StripeRedirect: {Error}", verifyResult.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Exception while attempting to VerifyPaymentAsync in StripeRedirect");
-            }
-
-            // Return HTML page that auto-redirects to Angular payment-success component
-            var redirectUrl = $"/paymob/response?session_id={Uri.EscapeDataString(session_id)}";
-            // Build HTML that injects sessionStorage values (tracked session & token) before navigating
-            var tokenScript = string.Empty;
-            if (!string.IsNullOrEmpty(injectedToken))
-            {
-                // Store token into sessionStorage under the key used by AuthService
-                var escapedToken = System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(injectedToken);
-                tokenScript = $"try{{ sessionStorage.setItem('scp_auth_token','{escapedToken}'); console.log('[StripeRedirect] Injected token into sessionStorage'); }}catch(e){{console.warn('token inject failed', e);}}";
-            }
-
-            var html = $@"
-<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Payment Processing</title>
-    <style>
-        body {{
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-            background: linear-gradient(to bottom right, #f5f5f5, #e0e0e0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }}
-        .container {{
-            text-align: center;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-        }}
-        .spinner {{
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }}
-        @keyframes spin {{
-            0% {{ transform: rotate(0deg); }}
-            100% {{ transform: rotate(360deg); }}
-        }}
-        h1 {{
-            font-size: 24px;
-            margin: 0 0 10px 0;
-            color: #333;
-        }}
-        p {{
-            color: #666;
-            margin: 0;
-            font-size: 14px;
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <div class='spinner'></div>
-        <h1>Processing Payment</h1>
-        <p>Redirecting you to verify your payment...</p>
-    </div>
-    <script>
-        // Store tracked session id so the Angular payment-success component can verify immediately
-        try {{ sessionStorage.setItem('last_checkout_session_id', '{Uri.EscapeDataString(session_id)}'); console.log('[StripeRedirect] Stored last_checkout_session_id in sessionStorage'); }} catch(e) {{ console.warn('[StripeRedirect] Failed to store session id', e); }}
-        {tokenScript}
-        // Redirect to Angular payment-success component after a short delay
-        setTimeout(function() {{
-            window.location.href = '{redirectUrl}';
-        }}, 150);
-    </script>
-</body>
-</html>";
-
-            return Content(html, "text/html; charset=utf-8");
         }
 
 

@@ -23,6 +23,11 @@ namespace SmartCareerPath.Application.Abstraction.ServicesContracts.Payment
         Task<Result<List<ProductPricingResponse>>> GetProductPricingAsync(int currency, CancellationToken cancellationToken = default);
 
         Task<Result> HandleWebhookEventAsync(int provider, string payload, string signature, CancellationToken cancellationToken = default);
+
+        // Development/testing helper: force-activate a payment by id.
+        // This will set the payment back to Pending and attempt verification so
+        // ActivateSubscriptionAsync runs (use only in dev environments).
+        Task<Result> ForceActivatePaymentAsync(int paymentId, CancellationToken cancellationToken = default);
     }
 }
 

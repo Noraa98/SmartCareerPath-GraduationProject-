@@ -90,8 +90,8 @@ namespace SmartCareerPath.Infrastructure.Persistence.Data
             {
                 ProductType.BundleSubscription, new Dictionary<BillingCycle, decimal>
                 {
-                    { BillingCycle.Monthly, 399.99m },
-                    { BillingCycle.Yearly, 3999.99m }
+                    { BillingCycle.Monthly, 30m },
+                    { BillingCycle.Yearly, 300m }
                 }
             },
             {
