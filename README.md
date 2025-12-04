@@ -1,4 +1,4 @@
-# 🎯 Smart Career Path Recommender
+#  Smart Career Path Recommender
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?style=flat-square&logo=dotnet)](https://dotnet.microsoft.com/)
 [![Angular](https://img.shields.io/badge/Angular-18-DD0031?style=flat-square&logo=angular)](https://angular.io/)
@@ -9,7 +9,7 @@
 
 ---
 
-## 📑 Table of Contents
+##  Table of Contents
 
 - [Overview](#overview)
 - [Key Features](#key-features)
@@ -22,56 +22,56 @@
 
 ---
 
-## 🌟 Overview
+##  Overview
 
 Smart Career Path Recommender is a comprehensive career development platform that integrates AI to provide personalized career guidance, professional CV generation, interview simulations, and job description parsing. Built from the ground up using clean architecture principles.
 
 ### **Core Capabilities**
-- 🎓 **AI-powered career recommendations** based on user quiz responses
-- 📄 **Automated CV generation** with professional formatting
-- 🎤 **Text-based interview simulator** with AI evaluation
-- 🔍 **Job description parsing** and requirement extraction
-- 🔐 **Secure authentication** with JWT
-- 💳 **Multi-provider payment integration** (PayPal, Paymob)
+-  **AI-powered career recommendations** based on user quiz responses
+-  **Automated CV generation** with professional formatting
+-  **Text-based interview simulator** with AI evaluation
+-  **Job description parsing** and requirement extraction
+-  **Secure authentication** with JWT
+-  **Multi-provider payment integration** (PayPal, Paymob)
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
-### 🎓 **Career Path Recommendation Engine**
+###  **Career Path Recommendation Engine**
 - **Intelligent Quiz System**: Multi-dimensional assessment covering technical and soft skills
 - **AI-Powered Analysis**: Integration with AI models to analyze quiz responses and generate career recommendations
 - **Confidence Scoring**: Probability scores for each recommended career path
 - **Learning Recommendations**: Suggested courses and resources aligned with career goals
 
-### 📄 **AI CV Builder**
+###  **AI CV Builder**
 - **AI Content Generation**: Leverages AI models to create professional summaries and experience descriptions
 - **Form-based Input**: User-friendly forms for entering personal info, education, experience, projects, and skills
 - **PDF Export**: Professional PDF generation with clean formatting
 - **Single Template**: Clean, professional format supporting both Arabic and English
 - **Real-time Preview**: See changes as you build your CV
 
-### 🎤 **AI Interview Simulator**
+###  **AI Interview Simulator**
 - **Multi-format Interviews**: Technical, HR, and Behavioral question types
 - **Chat-based Interface**: Text-only conversation format
 - **AI Evaluation**: Automated scoring and feedback on answers
 - **Performance Reports**: Detailed analysis of interview performance
 - **Question Bank**: Curated interview questions with AI-generated variations
 
-### 🔍 **Job Description Parser**
+###  **Job Description Parser**
 - **Text Extraction**: Parse job descriptions to extract key information
 - **Skills Recognition**: Identify required skills and qualifications
 - **Structured Output**: Organized display of role title, responsibilities, and requirements
 - **Manual Analysis**: User-friendly interface for reviewing parsed data
 
-### 🔐 **Security & Authentication**
+###  **Security & Authentication**
 - **JWT Authentication**: Token-based authentication system
 - **Password Security**: Secure password hashing with bcrypt
 - **Email Verification**: Account activation via email confirmation
 - **Password Reset**: Secure token-based password reset flow
 - **Role-based Access**: User and Premium account levels
 
-### 💳 **Payment Integration**
+###  **Payment Integration**
 - **Multi-provider Support**: PayPal and Paymob integration
 - **Strategy Pattern**: Flexible payment provider architecture
 - **Webhook Handling**: Secure payment verification
@@ -81,7 +81,7 @@ Smart Career Path Recommender is a comprehensive career development platform tha
 
 ---
 
-## 🛠️ Technology Stack
+##  Technology Stack
 
 ### **Backend (.NET 9)**
 
@@ -150,7 +150,7 @@ Smart Career Path Recommender is a comprehensive career development platform tha
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ### **Clean Architecture (Onion Architecture)**
 
@@ -217,7 +217,7 @@ SmartCareer.sln
 
 ---
 
-## 🤖 AI Integration
+##  AI Integration
 
 ### **AI Model Integration**
 - Integration with pre-trained AI models via API calls
@@ -239,7 +239,7 @@ public async Task<RecommendationDto> GenerateRecommendation(QuizResultDto quiz)
 
 ---
 
-## 📦 Installation
+##  Installation
 
 ### **Prerequisites**
 - .NET 9 SDK
@@ -314,7 +314,7 @@ ng build --configuration production
 
 ---
 
-## 📚 API Documentation
+##  API Documentation
 
 ### **Swagger Documentation**
 Access interactive API docs at: `https://localhost:7001/swagger`
@@ -368,7 +368,7 @@ GET  /api/payment/history/{userId}
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ### Dashboard
 ![Dashboard](https://via.placeholder.com/800x450?text=User+Dashboard)
@@ -408,7 +408,7 @@ GET  /api/payment/history/{userId}
 
 ---
 
-## 👩‍💻 Developer
+##  Developer
 
 **Noura Ahmed**
 - Full-Stack Software Engineer
@@ -418,7 +418,7 @@ GET  /api/payment/history/{userId}
 
 ---
 
-## 🙏 Acknowledgments
+##  Acknowledgments
 
 - Pre-trained AI models for natural language processing
 - PayPal and Paymob for payment infrastructure
@@ -427,7 +427,7 @@ GET  /api/payment/history/{userId}
 
 ---
 
-## 📄 License
+##  License
 
 This project is licensed under the MIT License.
 
