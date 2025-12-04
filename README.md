@@ -313,6 +313,67 @@ ng build --configuration production
 ```
 
 ---
+## Frontend (Angular 18)
+
+The frontend of **Smart Career Path Recommender** is built entirely with **Angular 18** and provides a modern, responsive, and user-friendly interface for all platform features.
+
+### **Key Features**
+
+* **Dashboard**: Overview of user activities, recommendations, and CV status
+* **Career Quiz Interface**: Interactive quiz with real-time AI feedback
+* **CV Builder**: Form-based input with real-time preview and PDF export
+* **Interview Simulator**: Chat-based interface for AI-driven interview practice
+* **Job Parser**: Upload or paste job descriptions to extract structured information
+* **User Profile & Settings**: Manage account, subscription, and personal data
+* **Responsive UI**: Optimized for desktop, tablet, and mobile devices
+* **Notifications**: Toast alerts for actions and errors using ngx-toastr
+* **Payment UI**: Integrated PayPal and Paymob checkout buttons
+
+### **Technology & Libraries**
+
+* **Angular 18**: Single-page application framework
+* **TypeScript 5.3**: Type-safe development
+* **RxJS 7.8**: Reactive programming for state management
+* **Angular Material 17**: Material Design components
+* **Bootstrap 5 & Tailwind CSS 3.4**: Responsive and utility-first styling
+* **Reactive Forms**: Custom form validation for complex user inputs
+* **HttpClient**: API communication with backend
+* **ngx-toastr**: Toast notifications for user actions
+
+### **Running the Frontend**
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Update API base URL in src/environments/environment.ts
+# Run development server
+ng serve
+
+# Build for production
+ng build --configuration production
+```
+
+### **Folder Structure**
+
+```
+frontend/
+├── src/
+│   ├── app/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/           # Feature pages (Dashboard, CV Builder, Interview, etc.)
+│   │   ├── services/        # API services
+│   │   ├── guards/          # Route guards
+│   │   └── app.module.ts
+│   ├── assets/              # Images, icons, styles
+│   └── environments/        # Environment variables
+```
+
+This setup ensures a fully **responsive and modular frontend**, easily maintainable and extensible for future features such as audio interviews or mobile app integration.
+
 
 ##  API Documentation
 
