@@ -1,0 +1,85 @@
+sidebar dropdown list 
+
+sidebar.html
+  <!-- Navigation Menu -->
+<nav class="flex-1 overflow-y-auto py-4">
+  <ul class="space-y-1 px-2">
+
+    <!-- MAIN ITEMS -->
+    <li *ngFor="let item of mainMenu">
+      <!-- زر Features -->
+      <button
+        *ngIf="item.label === 'Features'"
+        (click)="toggleFeatures()"
+        class="sidebar-item flex items-center w-full px-3 py-2 rounded-lg transition-all hover:bg-sidebar-accent/20 text-sidebar-foreground"
+        [class.justify-center]="isCollapsed">
+
+        <span class="w-5 h-5 flex-shrink-0" [innerHTML]="getIconHtml(item.iconName)"></span>
+
+        <span *ngIf="!isCollapsed" class="flex-1 text-left">
+          {{ item.label }}
+        </span>
+
+        <!-- Arrow -->
+        <svg *ngIf="!isCollapsed"
+             xmlns="http://www.w3.org/2000/svg"
+             width="16" height="16"
+             fill="none" stroke="currentColor" stroke-width="2"
+             [class.rotate-180]="featuresOpen"
+             class="transition-transform">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+
+      </button>
+
+      <!-- باقي العناصر -->
+      <a *ngIf="item.label !== 'Features'"
+         [routerLink]="item.route"
+         class="sidebar-item group"
+         [class.active]="isActiveRoute(item.route)"
+         [class.justify-center]="isCollapsed">
+        <span class="w-5 h-5 flex-shrink-0" [innerHTML]="getIconHtml(item.iconName)"></span>
+        <span *ngIf="!isCollapsed" class="truncate">{{ item.label }}</span>
+      </a>
+    </li>
+
+
+    <!-- FEATURES DROPDOWN -->
+    <li *ngIf="featuresOpen || isCollapsed" class="pl-4">
+      <a *ngFor="let f of featureItems"
+         [routerLink]="f.route"
+         class="sidebar-item group ml-2"
+         [class.active]="isActiveRoute(f.route)"
+         [class.justify-center]="isCollapsed">
+
+        <span class="w-5 h-5 flex-shrink-0" [innerHTML]="getIconHtml(f.iconName)"></span>
+
+        <span *ngIf="!isCollapsed" class="truncate">
+          {{ f.label }}
+        </span>
+      </a>
+    </li>
+
+  </ul>
+</nav>
+
+________________
+sidebar.ts
+featuresOpen: boolean = true;
+featureItems: MenuItem[] = [
+  { label: 'CV Builder', route: '/cv-builder', iconName: 'documentText' },
+  { label: 'Job Description Parser', route: '/job-parser', iconName: 'magnifyingGlass' },
+  { label: 'AI Interviewer', route: '/ai-interviewer', iconName: 'chatBubbleEllipses' },
+  { label: 'Quiz / Assessment', route: '/interests', iconName: 'clipboardCheck' },
+  { label: 'Recommendations', route: '/recommendations', iconName: 'flag' }
+];
+
+mainMenu: MenuItem[] = [
+  { label: 'Home', route: '/home', iconName: 'home' },
+  { label: 'Features', route: '#', iconName: 'sparkles' } // للزر الذي يفتح الـ dropdown
+];
+
+toggleFeatures(): void {
+  this.featuresOpen = !this.featuresOpen;
+}
+__________________________________________

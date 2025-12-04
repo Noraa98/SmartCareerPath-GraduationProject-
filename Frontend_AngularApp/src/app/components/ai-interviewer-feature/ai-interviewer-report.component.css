@@ -1,0 +1,95 @@
+.ai-report-printable {
+  background: white;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .ai-report-printable,
+  .ai-report-printable * {
+    visibility: visible;
+  }
+
+  .ai-report-printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+
+/* Report visual polish */
+.report-header h1 {
+  color: var(--foreground);
+}
+
+.report-header p {
+  color: var(--muted-foreground);
+}
+
+.report-item {
+  page-break-inside: avoid;
+}
+
+@media print {
+
+  /* Remove background gradients for printing and set white background */
+  .ai-report-printable {
+    background: var(--card) !important;
+  }
+
+  .backdrop-blur-sm {
+    background: var(--card) !important;
+  }
+
+  .report-header {
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* Add simple header for print pages */
+  @page {
+    margin: 20mm;
+  }
+}
+
+/* Visual polish: colors and typography */
+/* Visual polish: colors and typography */
+.ai-report-printable h1 {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.ai-report-printable p {
+  color: var(--muted-foreground);
+}
+
+.ai-report-printable .report-item {
+  background: var(--card);
+  box-shadow: 0 1px 4px rgba(148, 19, 123, 0.1);
+}
+
+.ai-report-printable .report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-report-printable .text-primary {
+  color: var(--primary) !important;
+}
+
+.ai-report-printable .text-muted-foreground {
+  color: var(--muted-foreground) !important;
+}
+
+.ai-report-printable .rounded-2xl {
+  border-radius: 12px;
+}
+
+.ai-report-printable .p-4 {
+  padding: 1rem;
+}

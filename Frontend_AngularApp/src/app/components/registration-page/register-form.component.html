@@ -1,0 +1,115 @@
+<!-- Register Form Template with Zod Validation -->
+<div class="register-form-container">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
+    <h2>Create Account</h2>
+
+    <!-- Server Error Alert -->
+    <div *ngIf="serverError" class="error-alert" role="alert">
+      {{ serverError }}
+    </div>
+
+    <!-- Email Field -->
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="your@email.com"
+        (blur)="onEmailBlur()"
+        class="form-input"
+        [class.is-invalid]="getFieldError('email') !== null"
+      />
+      <!-- Field-level error: [Required] [EmailAddress] -->
+      <span *ngIf="getFieldError('email')" class="error-text">
+        {{ getFieldError('email') }}
+      </span>
+      <!-- Async server check: Email uniqueness -->
+      <span *ngIf="emailCheckPending" class="loading-text">Checking availability...</span>
+      <span *ngIf="emailCheckError" class="error-text">
+        {{ emailCheckError }}
+      </span>
+    </div>
+
+    <!-- Password Field -->
+    <div class="form-group">
+      <label for="password">Password *</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        placeholder="At least 8 characters"
+        class="form-input"
+        [class.is-invalid]="getFieldError('password') !== null"
+      />
+      <!-- Field-level error: [Required] [StringLength(100, MinimumLength = 8)] -->
+      <span *ngIf="getFieldError('password')" class="error-text">
+        {{ getFieldError('password') }}
+      </span>
+    </div>
+
+    <!-- Confirm Password Field -->
+    <div class="form-group">
+      <label for="confirmPassword">Confirm Password *</label>
+      <input
+        id="confirmPassword"
+        type="password"
+        formControlName="confirmPassword"
+        placeholder="Repeat password"
+        class="form-input"
+        [class.is-invalid]="getFieldError('confirmPassword') !== null"
+      />
+      <!-- Cross-field error: [Compare("Password")] -->
+      <span *ngIf="getFieldError('confirmPassword')" class="error-text">
+        {{ getFieldError('confirmPassword') }}
+      </span>
+    </div>
+
+    <!-- Age Field -->
+    <div class="form-group">
+      <label for="age">Age *</label>
+      <input
+        id="age"
+        type="number"
+        formControlName="age"
+        placeholder="18-120"
+        class="form-input"
+        [class.is-invalid]="getFieldError('age') !== null"
+      />
+      <!-- Field-level error: [Range(18, 120)] -->
+      <span *ngIf="getFieldError('age')" class="error-text">
+        {{ getFieldError('age') }}
+      </span>
+    </div>
+
+    <!-- Phone Field -->
+    <div class="form-group">
+      <label for="phone">Phone (Optional)</label>
+      <input
+        id="phone"
+        type="tel"
+        formControlName="phone"
+        placeholder="+1234567890 or 1234567890"
+        class="form-input"
+        [class.is-invalid]="getFieldError('phone') !== null"
+      />
+      <!-- Field-level error: [RegularExpression(@"^\+?[1-9]\d{1,14}$")] -->
+      <span *ngIf="getFieldError('phone')" class="error-text">
+        {{ getFieldError('phone') }}
+      </span>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="submit-button"
+      [disabled]="isSubmitting || form.invalid"
+    >
+      {{ isSubmitting ? 'Creating account...' : 'Register' }}
+    </button>
+
+    <p class="form-footer">
+      Already have an account? <a href="/login">Log in</a>
+    </p>
+  </form>
+</div>

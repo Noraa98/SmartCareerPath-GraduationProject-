@@ -1,0 +1,8 @@
+/* Verify Email component styles */
+:host { display: block; }
+
+input:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.08); }
+
+button[type="submit"]:hover:not(:disabled) { transform: translateY(-1px); }
+
+@media (max-width:640px){ .max-w-md { max-width: 100%; } .p-8 { padding: 1.25rem; } }

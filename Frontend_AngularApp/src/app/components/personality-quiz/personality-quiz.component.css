@@ -1,0 +1,24 @@
+/* Personality quiz component styles */
+.quiz-card {
+  border-radius: 1.25rem;
+  overflow: visible;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+  background-clip: border-box;
+  border: none;
+}
+
+.quiz-card.selected {
+  background: var(--muted);
+  box-shadow: 0 4px 20px 0 rgba(247, 37, 133, 0.2);
+}
+
+.quiz-card:not(.selected) {
+  background: var(--card);
+}
+
+.quiz-card .card-content {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 1.25rem;
+}

@@ -1,0 +1,39 @@
+<div class="min-h-screen flex relative">
+  <!-- Sidebar - Always rendered but controlled by visibility -->
+  <app-sidebar
+    [class.hidden]="!sidebarVisible"
+    [showProfile]="currentStep === 'home' || currentStep === 'recommendations' || currentStep === 'features' || currentStep === 'cv-builder' || currentStep === 'job-parser' || currentStep === 'ai-interviewer' || currentStep === 'interests' || currentStep === 'quiz'"
+    [userName]="userName"
+    [showBack]="currentStep !== 'recommendations' && currentStep !== 'interests' && currentStep !== 'quiz'"
+  ></app-sidebar>
+
+  <!-- Toggle Button - Always visible on every page -->
+  <button
+    (click)="toggleSidebar()"
+    [style.left]="sidebarVisible ? sidebarWidth : '1rem'"
+    class="fixed top-4 z-50 w-10 h-10 rounded-lg bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center"
+    [title]="sidebarVisible ? 'Close Menu' : 'Open Menu'">
+    <svg *ngIf="sidebarVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+    </svg>
+    <svg *ngIf="!sidebarVisible" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  </button>
+
+  <!-- Backdrop overlay when sidebar is visible on mobile -->
+  <div
+    *ngIf="sidebarVisible"
+    (click)="toggleSidebar()"
+    class="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+  ></div>
+
+  <div class="flex-1 flex flex-col transition-all duration-300" [style.margin-left]="sidebarVisible ? sidebarWidth : '0'">
+    <main class="flex-1 transition-all duration-300">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- <app-footer *ngIf="showFooter"></app-footer> -->
+  </div>
+</div>
+

@@ -1,0 +1,7 @@
+/* Focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+    box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.3);
+    outline: none;
+}

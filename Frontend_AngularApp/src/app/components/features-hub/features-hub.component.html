@@ -1,0 +1,109 @@
+<div class="min-h-screen bg-gradient-to-br from-muted to-muted">
+  <div class="relative overflow-hidden">
+
+    <!-- subtle background overlay like Home -->
+    <div class="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-deep/10 opacity-50"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 py-24 text-center" [@fadeInUp]>
+
+      <!-- Badge -->
+      <div
+        class="inline-flex items-center gap-2 px-4 py-2 bg-card backdrop-blur-sm rounded-full border mb-6 shadow-sm">
+        <span class="text-lg text-primary flex items-center justify-center"
+          [innerHTML]="iconService.getIcon('sparkles')"></span>
+        <span class="text-sm text-foreground">AI-Powered Tools</span>
+      </div>
+
+      
+      <!-- Title -->
+      <h1 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
+        Empower Your Career Journey with AI
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
+        Welcome, {{ userName }}! Explore our suite of AI-powered tools designed to accelerate your career growth.
+      </p>
+
+      <!-- Features Grid (Same as Home Page Style) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div
+          *ngFor="let feature of features; let i = index"
+          class="relative"
+          [@fadeInUp]
+          [style.animation-delay.ms]="i * 120"
+        >
+          <!-- Premium Badge -->
+          <div *ngIf="isFeatureDisabled(feature.id)" class="absolute -top-3 right-4 z-10">
+            <span class="inline-block bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+              Pro Only
+            </span>
+          </div>
+
+          <app-card
+            (click)="onFeatureSelect(feature.id)"
+            class="cursor-pointer bg-card backdrop-blur-sm border transition-all rounded-2xl shadow-md hover:shadow-xl"
+            [class.opacity-60]="isFeatureDisabled(feature.id)"
+            [class.hover:scale-105]="!isFeatureDisabled(feature.id)"
+            [class.cursor-not-allowed]="isFeatureDisabled(feature.id)"
+            [style.borderColor]="isFeatureDisabled(feature.id) ? 'var(--border)' : ''"
+          >
+            <app-card-content class="p-8">
+              <!-- Icon -->
+              <div class="w-20 h-20 mx-auto mb-6 rounded-3xl bg-primary flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300"
+                [ngClass]="feature.color"
+                [class.opacity-50]="isFeatureDisabled(feature.id)">
+                <span [innerHTML]="iconService.getIcon(feature.icon)"
+                  class="w-16 h-16 text-white flex items-center justify-center"></span>
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-2xl font-semibold text-foreground mb-3">
+                {{ feature.title }}
+              </h3>
+
+              <!-- Description -->
+              <p class="text-muted-foreground mb-6 leading-relaxed text-sm">
+                {{ feature.description }}
+              </p>
+
+              <!-- Bullets -->
+              <ul class="text-left space-y-2 mb-6">
+                <li *ngFor="let feat of feature.features"
+                    class="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span class="text-primary font-bold">✓</span>
+                  {{ feat }}
+                </li>
+              </ul>
+
+              <!-- Premium-only text -->
+              <div *ngIf="isFeatureDisabled(feature.id)" class="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p class="text-sm text-amber-900 font-medium">Upgrade to Career Pro to unlock this feature</p>
+              </div>
+
+              <!-- Button -->
+              <app-button
+                [disabled]="isFeatureDisabled(feature.id)"
+                variant="outline"
+                className="w-full h-12 gap-2 bg-[#F4F4F5] rounded-xl shadow-sm hover:bg-muted hover:text-sidebar-foreground font-semibold gap-2 transition-all duration-300"
+                [ngClass]="isFeatureDisabled(feature.id) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-[#F4F4F5] text-foreground hover:bg-white hover:text-foreground'"
+              >
+                <span *ngIf="!isFeatureDisabled(feature.id)" class="inline-flex items-center gap-2"
+>
+                  Get Started <span [innerHTML]="iconService.getIcon('arrowRight')" class="text-foreground "></span>
+                </span>
+                <span *ngIf="isFeatureDisabled(feature.id)">
+                  Unlock with Pro
+                </span>
+              </app-button>
+          <!-- className="w-full gap-2 text-sidebar-foreground shadow-lg hover:bg-muted hover:text-sidebar-foreground"> -->
+                <!-- className="w-full h-12 rounded-xl bg-[#F4F4F5] text-foreground font-semibold gap-2 transition-all duration-300 hover:bg-white hover:text-foreground"> -->
+
+            </app-card-content>
+          </app-card>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

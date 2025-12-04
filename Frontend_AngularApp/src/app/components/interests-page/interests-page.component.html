@@ -1,0 +1,103 @@
+<div class="min-h-screen px-4 py-24 bg-gradient-to-br from-muted to-muted">
+
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Title -->
+    <div class="text-center mb-12" [@fadeInUp]>
+      <h1 class="text-4xl font-bold text-foreground mb-2">Career Quiz
+      </h1>
+
+      <!-- <h1 class="mb-4 text-[30px] text-foreground font-semibold">
+        What are your professional interests?
+      </h1> -->
+      <p class="max-w-2xl mx-auto text-[20px] text-muted-foreground">
+        Select the fields that inspire you to help us understand your career goals.
+
+      </p>
+    </div>
+
+    <!-- Search Input -->
+    <div class="mb-8" [@fadeIn]>
+      <div class="relative max-w-md mx-auto">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-accent"
+          [innerHTML]="iconService.getIcon('magnifyingGlass')">
+        </span>
+
+        <app-input type="text" placeholder="Search fields..." [(ngModel)]="searchQuery" name="search"
+          className="pl-12 h-14 rounded-2xl bg-card border border-border backdrop-blur-sm">
+        </app-input>
+      </div>
+    </div>
+
+    <!-- Interests Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+
+      <ng-container *ngFor="let interest of filteredInterests; let i = index">
+
+        <app-card (click)="toggleInterest(interest.id)"
+          class="cursor-pointer transition-all hover:scale-105 rounded-2xl" [ngClass]="selectedInterests.includes(interest.id)
+        ? 'border-2 border-primary bg-card shadow-md'
+        : 'border border-border bg-card'" [@fadeIn] [style.animation-delay.ms]="i * 50">
+
+          <app-card-content class="p-6 text-center">
+
+            <!-- Icon -->
+            <div
+              class="w-16 h-16 mx-auto mb-4 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300"
+              [ngClass]="selectedInterests.includes(interest.id)
+            ? 'bg-primary text-white border-2 border-primary'
+            : 'bg-muted text-dark'">
+              <span [innerHTML]="iconService.getIcon(getIconName(interest.id))"
+                class="w-10 h-10 flex items-center justify-center">
+              </span>
+            </div>
+
+            <!-- Title -->
+            <h3 class="mb-2 text-foreground">
+              {{ interest.name }}
+            </h3>
+
+            <!-- Description -->
+            <p class="text-sm text-muted-foreground">
+              {{ interest.description }}
+            </p>
+
+          </app-card-content>
+
+        </app-card>
+
+      </ng-container>
+
+    </div>
+
+
+
+    <!-- Continue Button -->
+    <div class="text-center">
+      <app-button (clicked)="handleContinue()" [disabled]="selectedInterests.length === 0"
+        className="w-full sm:w-auto px-8 h-9 rounded-xl gap-2 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all transition-all duration-300 hover:shadow-xl transform hover:scale-105">
+        Continue
+        <span [innerHTML]="iconService.getIcon('arrowRight')"></span>
+      </app-button>
+    </div>
+
+  </div>
+
+
+  <!-- Loading Overlay -->
+  <div *ngIf="loadingQuiz" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div class="rounded-lg shadow-lg p-8 flex flex-col items-center bg-card">
+      <div class="w-12 h-12 rounded-full animate-spin mb-4 bg-[#FEF9FC]">
+      </div>
+      <p class="text-foreground">Generating your quiz...</p>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <!-- <div
+    *ngIf="errorMsg"
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded shadow bg-destructive text-destructive-foreground">
+    {{ errorMsg }}
+  </div> -->
+
+</div>

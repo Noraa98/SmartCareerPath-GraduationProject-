@@ -1,0 +1,14 @@
+/* App component styles */
+:host {
+  display: block;
+  width: 100%;
+}
+
+/* Responsive adjustments for sidebar */
+@media (max-width: 768px) {
+  /* On mobile, sidebar should overlay instead of pushing content */
+  .flex-1 {
+    margin-left: 0 !important;
+  }
+}
+

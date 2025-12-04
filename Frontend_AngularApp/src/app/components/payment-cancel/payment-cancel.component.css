@@ -1,0 +1,7 @@
+.payment-cancel {
+  background: var(--card);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.muted { color: var(--muted-foreground); }

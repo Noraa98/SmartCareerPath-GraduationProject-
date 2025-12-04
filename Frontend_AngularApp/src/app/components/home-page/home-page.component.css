@@ -1,0 +1,136 @@
+.home-page {
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+}
+
+/* app-card,
+.recommendaion-card,
+.feature-card {
+  border: 1px solid var(--border) !important;
+} */
+
+.neural-pattern {
+  background: var(--background) !important;
+  animation: none;
+}
+
+/* .neural-pattern {
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--primary) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, var(--accent) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, var(--deep) 0%, transparent 50%);
+  animation: pulse 6s ease-in-out infinite;
+} */
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
+
+/* Feature Cards */
+.feature-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px) scale(1.01);
+}
+
+/* Recommendation Card */
+.recommendation-card {
+  transition: all 0.3s ease-in-out;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Scroll animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: 80vh;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-section h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+
+  .hero-section p {
+    font-size: 1.125rem;
+  }
+
+  .features-section,
+  .recommendations-section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .feature-card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  /* box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.3); */
+  outline: none;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}

@@ -1,0 +1,30 @@
+--- plans-page.component.ts.orig
++++ plans-page.component.ts.fixed
+@@ -1,2 +1,28 @@
++// ADD THIS TO plans-page.component.ts - After startCheckout() creates the session,
++// add a fallback redirect if Stripe doesn't redirect within a timeout.
++
++// In the next() block after window.location.href = res.checkoutUrl;
++// Add this code:
++
++          console.log('[PlansPage] Redirecting to checkout URL:', res.checkoutUrl);
++          window.location.href = res.checkoutUrl;
++          
++          // FALLBACK: If Stripe checkout doesn't redirect within 5 seconds,
++          // manually redirect to the success page (frontend will poll backend)
++          const redirectTimeout = setTimeout(() => {
++            console.warn('[PlansPage] Stripe checkout did not complete redirect within 5s timeout');
++            console.log('[PlansPage] Manually navigating to payment success page with tracked session');
++            const trackedSession = this.payment.retrieveTrackedSessionId();
++            if (trackedSession) {
++              // Redirect to success page - it will handle verification
++              window.location.href = `http://localhost:4200/paymob/response?session_id=${trackedSession}`;
++            } else {
++              console.error('[PlansPage] No tracked session available for manual redirect');
++              window.location.href = 'http://localhost:4200/paymob/response';
++            }
++          }, 5000);
++          
++          // If the page is unloaded (Stripe redirecting), cancel the timeout
++          window.addEventListener('beforeunload', () => clearTimeout(redirectTimeout));
++        } else {

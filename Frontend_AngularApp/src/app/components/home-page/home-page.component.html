@@ -1,0 +1,202 @@
+<div class="home-page min-h-screen bg-gradient-to-br from-muted to-muted">
+  <!-- Hero Section -->
+  <section class="hero-section relative pt-24 pb-20 px-4 overflow-hidden">
+    <!-- <div class="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-deep/10 opacity-50"></div>
+    <div class="neural-pattern absolute inset-0 opacity-20"></div> -->
+
+    <div class="max-w-7xl mx-auto relative z-10">
+      <div class="text-center max-w-4xl mx-auto" [@fadeInUp]>
+        <!-- Badge -->
+        <div
+          class="inline-flex items-center gap-2 px-4 py-2 bg-card backdrop-blur-sm rounded-full border mb-6 shadow-sm"
+          [@scaleIn]>
+          <span class="text-lg text-primary flex items-center justify-center"
+            [innerHTML]="iconService.getIcon('sparkles')"></span>
+          <span class="text-sm font-medium text-foreground">AI-Powered Career Guidance</span>
+        </div>
+
+        <!-- Headline -->
+        <!-- <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
+          Discover Your Ideal
+          Career 
+          with AI
+        </h1> -->
+        <h1 class="text-5xl lg:text-7xl font-bold leading-tight">
+          Shape Your Future with
+          <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            AI-Powered
+          </span>
+          Career Paths
+
+
+        </h1>
+
+        <!-- Subheadline -->
+        <p class="text-xl md:text-2xl mt-8 mb-10 text-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+          Discover personalized guidance, smart tools, and AI insights designed to help you build a successful career.
+        </p>
+
+        <!-- CTA Button -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12" [@fadeInUp]>
+          <app-button (clicked)="onGetStarted()"
+            className="h-14 px-8 from-primary transition-all duration-300 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 font-semibold text-lg gap-2 text-white">
+            Get Started
+            <span [innerHTML]="iconService.getIcon('arrowRight')"></span>
+          </app-button>
+          <!-- <app-button variant="outline" (clicked)="onExploreFeatures()"
+            className="h-14 px-8 rounded-2xl hover:bg-hoverr transition-all duration-300 font-semibold text-lg text-foreground">
+            Explore Features
+          </app-button> -->
+
+          <app-button variant="outline" (clicked)="onExploreFeatures()"
+            className="h-14 px-8 rounded-2xl border border-border  text-black font-semibold text-lg transition-all duration-300 hover:bg-hoverr hover:text-black transform hover:scale-105">
+            Explore Features
+          </app-button>
+
+
+        </div>
+      </div>
+
+      <!-- AI Illustration 
+      <div class="mt-16 flex justify-center" [@slideInRight]>
+        <div class="relative w-full max-w-2xl h-64">
+          <div class="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/20 to-deep/20 rounded-3xl blur-3xl">
+          </div>
+          <div
+            class="relative w-full h-full bg-card/50 backdrop-blur-sm rounded-3xl border flex items-center justify-center">
+            <div class="w-32 h-32 flex items-center justify-center animate-pulse" [innerHTML]="iconService.getIcon('sparkles')"></div>
+          </div>
+        </div>
+      </div>
+    -->
+    </div>
+  </section>
+
+  <!-- Feature Highlights Section -->
+  <section id="features" class="features-section py-20 px-4">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16" [@fadeInUp]>
+        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          Powerful AI Tools for Your Career
+        </h2>
+        <p class="text-xl text-foreground max-w-2xl mx-auto">
+          Everything you need to build, analyze, and advance your career in one place
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8" [@staggerFadeIn]>
+        <app-card *ngFor="let feature of features; let i = index" (click)="onFeatureClick(feature)"
+          [class]="'feature-card cursor-pointer transition-all duration-300 hover:scale-105  bg-card backdrop-blur-sm border border-border rounded-xl'"
+          [@fadeInUp] [style.animation-delay.ms]="i * 150">
+          <app-card-content class="p-8">
+            <!-- <div
+              [class]="'w-20 h-20 mx-auto mb-6 rounded-3xl ' + ' flex items-center justify-center text-4xl shadow-lg transform hover:scale-110 transition-transform duration-300'">
+              <span [innerHTML]="iconService.getIcon(feature.icon)"
+                class="w-16 h-16 flex items-center justify-center  text-black"></span>
+            </div> -->
+            <div
+              class=" w-20 h-20 mx-auto mb-6 rounded-3xl bg-primary flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 ">
+              <span [innerHTML]="iconService.getIcon(feature.icon)"
+                class="w-16 h-16 text-white flex items-center justify-center">
+              </span>
+            </div>
+
+            <h3 class="text-2xl font-bold text-foreground mb-3 text-center">{{ feature.title }}</h3>
+            <p class="text-foreground mb-6 text-center leading-relaxed">{{ feature.description }}</p>
+            <app-button variant="outline"
+              className="w-full h-12 rounded-xl bg-[#F4F4F5] text-foreground font-semibold gap-2 transition-all duration-300 hover:bg-white hover:text-foreground">
+              Try Now
+              <span [innerHTML]="iconService.getIcon('arrowRight')" class="text-foreground">
+              </span>
+            </app-button>
+
+          </app-card-content>
+        </app-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recommendations Preview Section -->
+  <section class="recommendations-section py-20 px-4  rounded-xl">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16" [@fadeInUp]>
+        <h2 class="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          Your Career Recommendations
+        </h2>
+        <p class="text-xl text-foreground max-w-2xl mx-auto">
+          Based on your skills, interests, and personality profile
+        </p>
+      </div>
+
+      <div class="max-w-4xl mx-auto" [@fadeInUp]>
+        <app-card
+          class="recommendation-card bg-card backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+          <app-card-content class="p-8 md:p-12">
+            <div class="flex flex-col md:flex-row items-center gap-6">
+              <!-- Icon -->
+              <div class="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center shadow-lg">
+                <span [innerHTML]="iconService.getIcon(recommendations[currentRecommendationIndex].icon)"
+                  class="w-16 h-16 text-white flex items-center justify-center"></span>
+              </div>
+
+
+              <!-- Content -->
+              <div class="flex-1 text-center md:text-left">
+                <h3 class="text-3xl font-bold text-foreground mb-2">
+                  {{ recommendations[currentRecommendationIndex].title }}
+                </h3>
+                <div class="flex items-center gap-4 mb-4 justify-center md:justify-start">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl font-bold text-foreground">
+                      {{ recommendations[currentRecommendationIndex].match }}%
+                    </span>
+                    <span class="text-foreground">Match</span>
+                  </div>
+                  <div class="w-32 h-3 bg-muted rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full transition-all duration-500"
+                      [style.width.%]="recommendations[currentRecommendationIndex].match">
+                    </div>
+                  </div>
+                </div>
+                <p class="text-foreground text-lg">
+                  {{ recommendations[currentRecommendationIndex].insight }}
+                </p>
+              </div>
+
+              <!-- Navigation -->
+              <div class="flex gap-2">
+                <button (click)="prevRecommendation()"
+                  class="w-12 h-12 rounded-xl hover: hover:bg-muted transition-all duration-200 flex items-center justify-center text-foreground hover:text-foreground">
+                  <span [innerHTML]="iconService.getIcon('chevronLeft')"></span>
+                </button>
+                <button (click)="nextRecommendation()"
+                  class="w-12 h-12 rounded-xl hover: hover:bg-muted transition-all duration-200 flex items-center justify-center text-foreground hover:text-foreground">
+                  <span [innerHTML]="iconService.getIcon('chevronRight')"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Dots Indicator -->
+            <div class="flex justify-center gap-2 mt-6">
+              <span *ngFor="let rec of recommendations; let i = index"
+                [class]="'w-2 h-2 rounded-full transition-all duration-300 ' + (i === currentRecommendationIndex ? 'bg-primary w-8' : 'bg-muted')">
+              </span>
+            </div>
+
+            <!-- Try Career Quiz Button -->
+            <div class="mt-8 text-center">
+              <app-button (clicked)="onTryCareerQuiz()" variant="outline"
+                className="w-full h-12 rounded-xl bg-[#F4F4F5] text-foreground font-semibold gap-2 transition-all duration-300 hover:bg-white hover:text-foreground">
+                Try Now
+                <span [innerHTML]="iconService.getIcon('arrowRight')"></span>
+              </app-button>
+            </div>
+          </app-card-content>
+        </app-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

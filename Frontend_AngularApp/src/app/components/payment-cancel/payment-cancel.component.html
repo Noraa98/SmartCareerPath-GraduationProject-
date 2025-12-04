@@ -1,0 +1,17 @@
+<div class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-muted to-muted">
+  <div class="max-w-2xl w-full">
+    <app-card>
+      <app-card-content>
+        <div class="text-center py-12">
+          <div class="text-2xl font-bold mb-2">Payment Cancelled</div>
+          <div class="text-muted-foreground mb-4">Your payment process was cancelled. No charges were made.</div>
+
+          <div class="flex gap-2 justify-center">
+            <app-button (clicked)="clearAndGoPlans()">Back to Plans</app-button>
+            <app-button variant="ghost" (clicked)="goHome()">Home</app-button>
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  </div>
+</div>

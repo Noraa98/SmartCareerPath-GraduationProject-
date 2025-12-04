@@ -1,0 +1,13 @@
+<input
+  [type]="type"
+  [id]="id"
+  [placeholder]="placeholder"
+  [disabled]="disabled"
+  [required]="required"
+  [class]="inputClasses"
+  [value]="value"
+  (input)="onInput($event)"
+  (blur)="onTouched()"
+  data-slot="input"
+/>
+

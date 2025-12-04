@@ -1,0 +1,114 @@
+/* Sidebar component styles */
+aside {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-sans);
+}
+/* Basic sidebar item */
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  color: black !important;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.sidebar-item:hover {
+  background: var(--sidebar-accent);
+  color: black !important;
+  transform: translateY(-2px);
+}
+
+/* Active Style */
+.sidebar-item.active {
+  background: var(--sidebar-primary);
+  font-weight: 600;
+  color: var(--foreground) !important;
+}
+
+/* Pro badge spacing - ensure text doesn't overlap */
+/* Reserve space on the right for the Pro badge and make label truncate cleanly */
+.sidebar-item {
+  /* ensure enough right padding so badge does not overlap text */
+  padding-right: 3rem; /* ~48px to accommodate badge */
+}
+
+.sidebar-item .truncate {
+  display: inline-block;
+  max-width: calc(100% - 3.5rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Icon animation */
+.sidebar-item .icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.25s ease;
+}
+
+.sidebar-item:hover .icon {
+  transform: scale(1.15);
+}
+
+
+aside.collapsed {
+  overflow-x: hidden;
+}
+
+aside.hidden {
+  transform: translateX(-100%);
+}
+
+nav a.active {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  font-weight: 500;
+}
+
+nav a:hover:not(.active) {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+  opacity: 0.8;
+}
+
+/* Smooth transitions for menu items */
+nav a {
+  transition: all 0.2s ease;
+}
+
+/* Icon styling - inherit global styles */
+nav a svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 1.5;
+  transition: transform 0.2s ease;
+}
+
+nav a:hover svg {
+  transform: scale(1.1);
+}
+
+nav a.active svg {
+  color: var(--sidebar-accent-foreground);
+}
+
+/* Ensure icons inherit sidebar colors */
+nav a svg {
+  color: currentColor;
+}
+
+/* Responsive: Sidebar behavior on mobile */
+@media (max-width: 768px) {
+  aside {
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  aside.hidden {
+    transform: translateX(-100%);
+  }
+}
+

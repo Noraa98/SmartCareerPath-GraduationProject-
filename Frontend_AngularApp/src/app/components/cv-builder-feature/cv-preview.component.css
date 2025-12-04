@@ -1,0 +1,13 @@
+.cv-preview {
+  /* small adjustments for printable CV */
+}
+
+#cv-preview-root {
+  padding: 28px;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  #cv-preview-root, #cv-preview-root * { visibility: visible; }
+  #cv-preview-root { position: absolute; left: 0; top: 0; width: 100%; }
+}

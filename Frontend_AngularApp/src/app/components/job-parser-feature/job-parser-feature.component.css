@@ -1,0 +1,35 @@
+.job-parser {
+  min-height: 100vh;
+}
+
+/* Smooth transitions */
+textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .job-parser .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation for skill/keyword tags */
+span {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

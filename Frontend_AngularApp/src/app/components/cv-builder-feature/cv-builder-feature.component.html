@@ -1,0 +1,296 @@
+<div class="cv-builder min-h-screen bg-gradient-to-br from-muted to-muted pt-24 px-4">
+  <div class="max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8" [@fadeInUp]>
+      <!-- <div
+        class="w-20 h-20 mx-auto mb-4 rounded-3xl bg-gradient-to-br from-primary to-deep flex items-center justify-center text-5xl shadow-lg">
+        <span [innerHTML]="iconService.getIcon('documentText')" class="w-16 h-16 flex items-center justify-center"></span>
+      </div> -->
+      <h1 class="text-4xl font-bold text-foreground mb-2">CV Builder</h1>
+      <p class="text-muted-foreground text-lg">Create a professional, ATS-friendly resume with AI-powered suggestions
+      </p>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="mb-8" [@fadeInUp]>
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex gap-2 w-full">
+          <button *ngFor="let section of sections; let i = index" (click)="goToSection(i)" [class]="
+          'px-4 py-2 rounded-xl text-sm font-medium flex-1
+       transition-all duration-200 flex items-center ' +
+          (currentSection === i
+            ? 'bg-primary text-white shadow-lg'
+            : 'bg-card text-foreground hover:bg-primary hover:text-white hover:shadow-lg  ')
+        ">
+            <span class="mr-2 w-5 h-5 inline-block flex items-center justify-center"
+              [innerHTML]="iconService.getIcon(section.icon)">
+            </span>
+            {{ section.title }}
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Progress Line -->
+      <div class="w-full h-2 bg-muted-foreground rounded-full overflow-hidden">
+        <div class="h-full transition-all duration-500 rounded-full" style="background-color: var(--primary);"
+          [style.width.%]="progress">
+        </div>
+      </div>
+      <p class="text-sm text-muted-foreground mt-2 text-center">{{ Math.round(progress) }}% Complete</p>
+    </div>
+
+    <!-- Form Sections -->
+    <app-card class="bg-card/90 backdrop-blur-sm shadow-2xl rounded-3xl border" [@fadeInUp]>
+      <app-card-content class="p-8">
+        <!-- Personal Information Section -->
+        <div *ngIf="currentSection === 0" [@slideIn]>
+          <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 flex items-center justify-center" [innerHTML]="iconService.getIcon('user')"></span>
+            Personal Information
+          </h2>
+          <div class="space-y-6">
+            <div>
+              <app-label htmlFor="fullName" className="text-foreground  font-semibold mb-2 block">
+                Full Name <span class="text-primary">*</span>
+              </app-label>
+              <app-input id="fullName" type="text" placeholder="John Doe" [(ngModel)]="fullName" name="fullName"
+                className="h-12 bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20" [required]="true">
+              </app-input>
+            </div>
+
+            <div>
+              <app-label htmlFor="email" className="text-foreground font-semibold mb-2 block">
+                Email <span class="text-primary">*</span>
+              </app-label>
+              <app-input id="email" type="email" placeholder="john@example.com" [(ngModel)]="email" name="email"
+                className="h-12 bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20" [required]="true">
+              </app-input>
+            </div>
+
+            <div>
+              <app-label htmlFor="phoneNumber" className="text-foreground font-semibold mb-2 block">
+                Phone Number <span class="text-primary">*</span>
+              </app-label>
+              <app-input id="phoneNumber" type="tel" placeholder="+1 234 567 8900" [(ngModel)]="phoneNumber"
+                name="phoneNumber" className="h-12 bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20"
+                [required]="true">
+              </app-input>
+            </div>
+
+            <div>
+              <app-label htmlFor="professionalSummary" className="text-foreground font-semibold mb-2 block">
+                Professional Summary
+              </app-label>
+              <textarea id="professionalSummary" [(ngModel)]="professionalSummary" name="professionalSummary" rows="4"
+                placeholder="Write a brief professional summary about yourself (e.g., your expertise, career goals, and what makes you unique)..."
+                class="w-full px-4 text-black bg-[#F5F5F5] py-3 rounded-xl border focus: focus:ring-2 focus:ring-primary/20 resize-none transition-all">
+              </textarea>
+              <p class="text-xs text-muted-foreground mt-1">Optional: Leave empty if you don't want a summary in your CV</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Experience Section -->
+        <div *ngIf="currentSection === 1" [@slideIn]>
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+              <span class="text-3xl">💼</span>
+              Work Experience
+            </h2>
+            <app-button (clicked)="addWorkExperience()" variant="outline"
+              className="rounded-xl text-foreground  bg-[#F5F5F5]  hover:bg-primary hover:text-white shadow-md transition-all duration-300 hover:shadow-md transform hover:scale-105">
+              + Add More
+            </app-button>
+          </div>
+
+          <div class="space-y-6">
+            <div *ngFor="let exp of workExperiences; let i = index"
+              class="p-6 bg-muted/50 rounded-2xl border space-y-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-foreground">Experience {{ i + 1 }}</h3>
+                <button *ngIf="workExperiences.length > 1" (click)="removeWorkExperience(i)"
+                  class="text-destructive hover:text-destructive-foreground text-sm font-medium">
+                  Remove
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <app-label [htmlFor]="'company-' + i" className="text-foreground font-medium mb-2 block">
+                    Company Name
+                  </app-label>
+                  <app-input [id]="'company-' + i" type="text" placeholder="Company Name" [(ngModel)]="exp.companyName"
+                    [name]="'company-' + i" className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+                  </app-input>
+                </div>
+
+                <div>
+                  <app-label [htmlFor]="'role-' + i" className="text-foreground font-medium mb-2 block">
+                    Role / Job Title
+                  </app-label>
+                  <app-input [id]="'role-' + i" type="text" placeholder="Software Engineer" [(ngModel)]="exp.role"
+                    [name]="'role-' + i" className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+                  </app-input>
+                </div>
+
+                <div>
+                  <app-label [htmlFor]="'startDate-' + i" className="text-foreground font-medium mb-2 block">
+                    Start Date
+                  </app-label>
+                  <app-input [id]="'startDate-' + i" type="month" [(ngModel)]="exp.startDate" [name]="'startDate-' + i"
+                    className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+                  </app-input>
+                </div>
+
+                <div>
+                  <app-label [htmlFor]="'endDate-' + i" className="text-foreground font-medium mb-2 block">
+                    End Date
+                  </app-label>
+                  <app-input [id]="'endDate-' + i" type="month" [(ngModel)]="exp.endDate" [name]="'endDate-' + i"
+                    className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+                  </app-input>
+                </div>
+              </div>
+
+              <div>
+                <app-label [htmlFor]="'description-' + i" className="text-foreground font-medium mb-2 block">
+                  Description (responsibilities and achievements)
+                </app-label>
+                <textarea [id]="'description-' + i" [(ngModel)]="exp.description" [name]="'description-' + i" rows="4"
+                  placeholder="Describe your responsibilities and key achievements..."
+                  class="w-full px-4 text-black bg-[#F5F5F5] py-3 rounded-xl border focus: focus:ring-2 focus:ring-primary/20 resize-none transition-all">
+                </textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Education & Skills Section -->
+        <div *ngIf="currentSection === 2" [@slideIn]>
+          <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            <span class="text-3xl">🎓</span>
+            Education & Skills
+          </h2>
+          <div class="space-y-6">
+            <div>
+              <app-label htmlFor="education" className="text-foreground font-semibold mb-2 block">
+                Education
+              </app-label>
+              <app-input id="education" type="text" placeholder="Bachelor of Computer Science, XYZ University, 2020"
+                [(ngModel)]="education" name="education"
+                className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+              </app-input>
+            </div>
+
+            <div>
+              <app-label htmlFor="skills" className="text-foreground font-semibold mb-2 block">
+                Skills
+              </app-label>
+              <app-input id="skills" type="text" placeholder="JavaScript, React, Python, Project Management"
+                [(ngModel)]="skills" name="skills"
+                className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+              </app-input>
+              <!-- <p class="text-sm text-muted-foreground mt-1">Separate skills with commas</p> -->
+            </div>
+
+            <div>
+              <app-label htmlFor="certifications" className="text-foreground font-semibold mb-2 block">
+                Certifications
+              </app-label>
+              <app-input id="certifications" type="text" placeholder="AWS Certified Solutions Architect, PMP"
+                [(ngModel)]="certifications" name="certifications"
+                className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+              </app-input>
+            </div>
+
+            <div>
+              <app-label htmlFor="languages" className="text-foreground font-semibold mb-2 block">
+                Languages
+              </app-label>
+              <app-input id="languages" type="text" placeholder="English – Native, Spanish – Fluent"
+                [(ngModel)]="languages" name="languages"
+                className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+              </app-input>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Position Section -->
+        <div *ngIf="currentSection === 3" [@slideIn]>
+          <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            <span class="w-8 h-8 flex items-center justify-center" [innerHTML]="iconService.getIcon('flag')"></span>
+            Target Position
+          </h2>
+          <div>
+            <app-label htmlFor="desiredJobRole" className="text-foreground font-semibold mb-2 block">
+              Desired Job Role
+            </app-label>
+            <app-input id="desiredJobRole" type="text" placeholder="Senior Software Engineer"
+              [(ngModel)]="desiredJobRole" name="desiredJobRole"
+              className="h-12 text-black bg-[#F5F5F5] rounded-xl focus: focus:ring-2 focus:ring-primary/20">
+            </app-input>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between mt-8 pt-6">
+          <app-button *ngIf="currentSection > 0" (clicked)="prevSection()" variant="outline"
+            className="rounded-xl text-black bg-[#F5F5F5] hover:bg-primary hover:text-white text-foreground shadow-md transition-all duration-300 hover:shadow-md transform hover:scale-105">
+            <span [innerHTML]="iconService.getIcon('chevronLeft')"></span> Previous
+          </app-button>
+          <div *ngIf="currentSection === 0" class="flex-1"></div>
+
+          <app-button *ngIf="currentSection < sections.length - 1" (clicked)="nextSection()"
+            className="ml-auto rounded-xl text-white shadow-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+            Next <span [innerHTML]="iconService.getIcon('chevronRight')"></span>
+          </app-button>
+
+          <app-button *ngIf="currentSection === sections.length - 1" (clicked)="generateCV()" [disabled]="isGenerating"
+            className="ml-auto rounded-xl transition-all duration-300 hover:shadow-md transform hover:scale-105 bg-gradient-to-r from-primary via-accent to-deep text-white shadow-lg h-14 px-8 font-semibold text-lg gap-2">
+            <span *ngIf="!isGenerating" class="flex items-center gap-2">
+              <span [innerHTML]="iconService.getIcon('sparkles')" class="w-4 h-4"></span>
+              Generate My CV
+            </span>
+            <span *ngIf="isGenerating" class="flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
+              </svg>
+              Generating CV... {{ generationProgress }}%
+            </span>
+          </app-button>
+        </div>
+
+        <!-- AI Progress Feedback -->
+        <div *ngIf="isGenerating" class="mt-6 p-4 bg-gradient-to-r from-muted to-background rounded-2xl border">
+          <div class="flex items-center gap-3 mb-2">
+            <div
+              class="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-deep flex items-center justify-center text-white text-sm font-bold">
+              AI
+            </div>
+            <span class="font-semibold text-foreground">AI is generating your CV...</span>
+          </div>
+          <div class="w-full h-2 bg-card rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-primary to-deep transition-all duration-300 rounded-full"
+              [style.width.%]="generationProgress">
+            </div>
+          </div>
+          <p class="text-sm text-muted-foreground mt-2">Analyzing your experience, optimizing keywords, and formatting
+            your CV...</p>
+        </div>
+      </app-card-content>
+    </app-card>
+
+
+     <!-- Back Button -->
+ <div class="mt-6 text-center">
+      <app-button (clicked)="onBack()"  className="text-[white] transition-all duration-300 hover:shadow-xl transform hover:scale-105 hover:text-foreground/80 font-medium gap-2 mb-5">
+        <span [innerHTML]="iconService.getIcon('chevronLeft')"></span> Back to Features
+      </app-button>
+    </div>
+  </div>
+</div>

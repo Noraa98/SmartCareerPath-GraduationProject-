@@ -1,0 +1,69 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted to-muted px-4 py-20">
+  <div *ngIf="isLoading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div class="bg-card rounded-lg shadow-lg p-8 flex flex-col items-center">
+      <div class="w-12 h-12 rounded-full animate-spin mb-4"></div>
+      <p class="text-muted-foreground">Analyzing your profile...</p>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && recommendation"
+    class="min-h-screen bg-gradient-to-br from-muted/70 via-background/70 to-muted/70 px-4 py-24 animate-fadeInUp">
+    <div class="max-w-2xl mx-auto">
+      <div class="text-center mb-12">
+        <div
+          class="inline-flex items-center gap-2 px-4 py-2 bg-white text-black rounded-full border mb-6 shadow">
+          <span class="text-lg">🧭</span>
+          <span class="text-sm">Your AI Career Path</span>
+        </div>
+        <h1
+          class="text-2xl md:text-3xl font-bold text-primary bg-gradient-to-r from-primary to-primary bg-clip-text text-transparent mb-4">
+          Congratulations !</h1>
+        <p class="text-foreground max-w-2xl mx-auto">
+          Based on your interests and quiz answers, here is your personalized career path recommendation.
+        </p>
+      </div>
+      <div class="bg-card/90 bg-white rounded-xl shadow-lg p-8 mb-8 flex flex-col items-center from-primary to-accent animate-fadeInUp">
+        <div class="text-6xl mb-4 animate-bounce">{{ recommendation.careerPathIcon || '🧭' }}</div>
+        <h2 class="text-2xl font-bold mb-2 text-foreground">{{ recommendation.careerPath }}</h2>
+        <p class="text-muted-foreground mb-4 text-lg">{{ recommendation.description }}</p>
+        <div class="bg-[#f4f4f5] rounded-lg p-4 text-foreground text-base shadow-lg">
+          <span class="font-semibold">Why this path?</span>
+          <div>{{ recommendation.reasoning }}</div>
+        </div>
+      </div>
+
+
+
+      <div class="flex flex-col sm:flex-row gap-4 mt-6 text-center justify-center">
+        <app-button (clicked)="handleRetakeQuiz()" variant="outline"
+          className="h-10 px-6 gap-2 rounded-2xl border border-border text-black font-semibold text-ms transition-all duration-300 hover:bg-hoverr hover:text-black transform hover:scale-105">
+
+          <span [innerHTML]="iconService.getIcon('rotate-ccw')"
+            class="w-4 h-4 text-sm flex items-center justify-center">
+          </span>
+          Retake Quiz
+        </app-button>
+
+
+
+
+        <app-button (clicked)="handleContinue()"
+          className="transition-all duration-300 hover:shadow-xl transform hover:scale-105 text-[white] hover:text-foreground/80 font-medium gap-2 mb-5">
+          Continue to Features
+          <span [innerHTML]="iconService.getIcon('arrowRight')"></span>
+
+        </app-button>
+
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading && !recommendation" class="min-h-screen flex items-center justify-center">
+    <div class="text-center text-muted-foreground">
+      <p>Sorry, we couldn't generate a recommendation. Please try again.</p>
+      <app-button (clicked)="handleRetakeQuiz()"
+        className="text-[white] transition-all duration-300 hover:shadow-xl mt-4 mb-5 transform hover:scale-105 hover:text-foreground/80 font-medium gap-2 mb-5">
+        Retake Quiz</app-button>
+    </div>
+  </div>
+</div>

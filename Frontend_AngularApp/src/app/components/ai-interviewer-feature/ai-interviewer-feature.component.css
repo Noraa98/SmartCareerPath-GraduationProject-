@@ -1,0 +1,67 @@
+.ai-interviewer {
+  min-height: 100vh;
+  padding-top: 6rem; /* increased so header content clears fixed navbar */
+}
+
+/* Smooth transitions */
+textarea {
+  transition: all 0.2s ease-in-out;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+/* Recording animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Ensure the header/robot icon sits below the fixed navbar */
+.header-icon {
+  margin-top: 2rem; /* push icon further down to avoid navbar overlap */
+  position: relative;
+  z-index: 10;
+}
+
+/* Responsive adjustments: reduce top spacing on smaller screens */
+@media (max-width: 768px) {
+  .ai-interviewer {
+    padding-top: 4rem;
+  }
+
+  .header-icon {
+    margin-top: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ai-interviewer {
+    padding-top: 3rem;
+  }
+
+  .header-icon {
+    margin-top: 0.75rem;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .ai-interviewer .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sticky {
+    position: relative;
+    top: 0;
+  }
+}

@@ -1,0 +1,37 @@
+/* =============== Card Blur =============== */
+.login-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+}
+
+/* =============== Shake Animation =============== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* =============== Input Focus =============== */
+input:focus {
+  outline: none;
+   /* box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);Primary */
+  border-color: var(--primary);
+}
+
+/* Smooth transitions */
+button,
+a,
+input {
+  transition: all 0.25s ease;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .login-card {
+    padding: 1.5rem !important;
+  }
+}

@@ -1,0 +1,33 @@
+<div class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-muted to-muted">
+  <div class="max-w-2xl w-full">
+    <app-card>
+      <app-card-content>
+        <div *ngIf="loading" class="text-center py-12">
+          <div class="mb-4">Verifying payment, please wait...</div>
+        </div>
+
+        <div *ngIf="error" class="text-center py-8">
+          <div class="text-red-500 font-semibold mb-4">{{ error }}</div>
+          <div class="flex justify-center">
+            <app-button (clicked)="goHome()">Back to Home</app-button>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && result" class="text-center py-8">
+          <div class="text-2xl font-bold mb-2">Payment {{ result.status || 'Result' }}</div>
+          <div class="text-muted-foreground mb-4">{{ result.message || 'Thank you for your purchase.' }}</div>
+
+          <div class="mb-4">
+            <div><strong>Transaction:</strong> {{ result.transactionId || result.transaction || '—' }}</div>
+            <div><strong>Subscription ID:</strong> {{ result.subscriptionId || '—' }}</div>
+            <div><strong>Amount:</strong> {{ result.displayAmount || result.amount || '—' }}</div>
+          </div>
+
+          <div class="flex gap-2 justify-center">
+            <app-button (clicked)="goHome()" className="">Go to Home</app-button>
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  </div>
+</div>

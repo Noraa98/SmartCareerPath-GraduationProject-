@@ -1,0 +1,173 @@
+<div class="min-h-screen bg-gradient-to-br from-muted to-muted flex items-center justify-center px-4 py-20">
+
+  <!-- Main Container -->
+  <div class="w-full max-w-[500px] shadow-xl" [@fadeInUp]>
+
+    <!-- Branding -->
+    <div class="text-center mb-8">
+
+      <!-- Logo -->
+      <div class="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+        <img src="assets/logo.png" class="w-full h-full object-contain" alt="logo" />
+      </div>
+
+      <h1 class="text-2xl font-bold" style="color: var(--foreground)">
+        Welcome Back !
+      </h1>
+
+      <p class="text-xl mt-1" style="color: var(--muted-foreground)">
+        Log in to continue your smart career journey
+      </p>
+    </div>
+
+    <!-- Login Card -->
+    <app-card className="p-10 login-card shadow-2xl w-full flex flex-col justify-between">
+      <app-card-content>
+
+        <form (ngSubmit)="onSubmit()" class="space-y-8">
+
+          <!-- Email -->
+          <div class="space-y-0">
+            <app-label htmlFor="email" className="font-semibold text-md" style="color: var(--foreground)">Email</app-label>
+
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-md text-gray-400 pointer-events-none"
+                [innerHTML]="iconService.getIcon('email')"></span>
+
+              <app-input
+                id="email"
+                name="email"
+                type="email"
+                [(ngModel)]="email"
+                placeholder="john@example.com"
+                className="pl-12 h-10 rounded-xl text-sm shadow-md"
+                [style]="{'box-shadow': emailError ? '0 0 0 2px var(--destructive)' : ''}"
+                (blur)="validateEmail()">
+              </app-input>
+            </div>
+
+            <p *ngIf="emailError" class="text-sm" style="color: var(--destructive)">
+              {{ emailError }}
+            </p>
+          </div>
+
+          <!-- Password -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <app-label htmlFor="password" className="font-semibold text-md" style="color: var(--foreground)">
+                Password
+              </app-label>
+
+              <a routerLink="/forgot-password" class="text-sm hover:underline" style="color: var(--primary)">
+                Forgot password?
+              </a>
+            </div>
+
+            <div class="relative">
+              <span
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-md text-gray-400 pointer-events-none"
+                [innerHTML]="iconService.getIcon('password')"></span>
+
+              <app-input
+                id="password"
+                name="password"
+                type="password"
+                [(ngModel)]="password"
+                placeholder="••••••••"
+                className="pl-12 h-10 rounded-xl text-sm shadow-md"
+                [style]="{'box-shadow': passwordError ? '0 0 0 2px var(--destructive)' : ''}"
+                (blur)="validatePassword()">
+              </app-input>
+            </div>
+
+            <p *ngIf="passwordError" class="text-sm" style="color: var(--destructive)">
+              {{ passwordError }}
+            </p>
+          </div>
+
+          <!-- Remember Me -->
+          <div class="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              name="rememberMe"
+              [(ngModel)]="rememberMe"
+              class="w-4 h-4 rounded cursor-pointer"
+              style="accent-color: var(--primary)" />
+
+            <label for="rememberMe" class="text-sm select-none" style="color: var(--muted-foreground)">
+              Remember me
+            </label>
+          </div>
+
+          <!-- Error Message -->
+          <div
+            *ngIf="error"
+            class="p-3 rounded-xl text-sm animate-shake shadow-md"
+            style="background-color: var(--muted); color: var(--destructive)">
+            {{ error }}
+          </div>
+
+          <!-- Login Button -->
+          <app-button
+            type="submit"
+            [disabled]="isLoading"
+            className="w-full h-10 rounded-lg text-md text-white mt-2 shadow-lg
+                      transition-all duration-300 hover:shadow-xl transform hover:scale-105 font-semibold gap-2"
+            [style]="{'background':'linear-gradient(to right, var(--primary), var(--deep))'}">
+
+            <span *ngIf="!isLoading">Log in</span>
+
+            <span *ngIf="isLoading" class="flex items-center justify-center gap-2">
+              Loading...
+            </span>
+          </app-button>
+
+          <!-- Divider -->
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full" style="border-top: 1px solid var(--muted)"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-4" style="background: var(--card); color: var(--muted-foreground)">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <!-- Social Login -->
+          <div>
+
+            <app-button
+              variant="outline"
+              className="w-full h-8 rounded-lg bg-[#F4F4F5] text-foreground gap-2 text-sm transition-all 
+                          duration-300 hover:bg-white hover:text-foreground shadow-md mx-auto flex items-center">
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="google">
+              Google
+            </app-button>
+<!-- 
+            <app-button
+              variant="outline"
+              className="w-full h-8 rounded-lg bg-[#F4F4F5] text-foreground gap-2 text-sm transition-all duration-300 hover:bg-white hover:text-foreground shadow-md">
+
+              <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="w-6 h-6" alt="linkedin">
+              LinkedIn
+            </app-button> -->
+
+          </div>
+
+        </form>
+
+      </app-card-content>
+    </app-card>
+
+    <!-- Sign Up Link -->
+    <p class="mt-6 text-center text-sm" style="color: var(--muted-foreground)">
+      Don't have an account?
+      <a routerLink="/registration" class="font-semibold hover:underline ml-1" style="color: var(--primary)">
+        Sign up
+      </a>
+    </p>
+
+  </div>
+</div>

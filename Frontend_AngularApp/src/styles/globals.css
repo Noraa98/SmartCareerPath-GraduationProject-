@@ -1,0 +1,89 @@
+html, body {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+:root {
+  --font-size: 16px;
+
+  /* Semantic Mapping */
+  --background: #ffffff;
+  --foreground: rgb(0, 0, 0);
+
+  --card: #ffffff;
+  --card-foreground: #3a0ca3ff;
+
+  --popover: #ffffff;
+  --popover-foreground: #3a0ca3ff;
+/* f72585ff */
+  /* --primary: rgb(224, 124, 169); */
+  --primary: #3C83F6;
+  --primary-foreground: #ffffff;
+
+  --secondary: #4895efff;
+  --secondary-foreground: #ffffff;
+
+  --muted: #f8f4fe;
+  --muted-foreground: #71717A;
+
+
+  --accent: #7209b7ff;
+  --accent-foreground: #ffffff;
+
+  --deep: #480ca8ff;
+  --dark: #3a0ca3ff;
+
+  /* --destructive: #f72585ff; */
+  --destructive: #fd2550;
+  --destructive-foreground: #ffffff;
+
+  --border: #febbd9;
+  --input: #d4c5f9;
+  --input-background: #ffffff;
+  --ring: #f72585ff;
+
+  --radius: 0.75rem;
+
+  --sidebar: #faf8ff;
+  /* --sidebar-foreground: #3a0ca3ff; */
+  --sidebar-primary: #f72585ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #d4c5f9;
+  --sidebar-ring: #f72585ff;
+
+  /* Global Font Family */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Remove global border and outline from all elements */
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure font inheritance for form elements and buttons */
+input,
+button,
+textarea,
+select,
+a,
+.mat-typography,
+.mat-button,
+.mat-raised-button,
+.mat-icon-button,
+.mat-stroked-button,
+.mat-flat-button,
+.mat-fab,
+.mat-mini-fab {
+  font-family: var(--font-sans) !important;
+}
+
+html {
+  font-size: var(--font-size);
+}

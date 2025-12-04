@@ -1,0 +1,128 @@
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .plans-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.plan-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+/* Highlighted center card for Careera Pro */
+.plan-card--center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.plan-card--highlight {
+  border-color: var(--primary);
+  box-shadow: 0 12px 30px rgba(16,24,40,0.12);
+  transform: translateY(-4px);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+.plan-card--highlight:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 18px 40px rgba(16,24,40,0.16);
+}
+
+.plan-card-inner { width: 100%; }
+.plan-title { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; }
+.plan-subtitle { color: var(--muted-foreground); font-size: 0.95rem; margin-bottom: 0.4rem; }
+
+/* Meta row under the title to make the upper section parsed and organized */
+.plan-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: center; color: var(--muted-foreground); font-size: 0.8rem; }
+.plan-meta .meta-item { font-weight: 600; color: var(--muted-foreground); padding: 0 0.25rem; }
+.plan-meta .meta-sep { color: rgba(0,0,0,0.18); }
+.plan-meta .meta-desc { color: var(--muted-foreground); font-weight: 400; max-width: 18rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+
+/* Slightly increase spacing above the header for visual rhythm */
+.plan-card-inner { padding-top: 0.25rem; }
+.tier-amount { font-size: 1.05rem; }
+
+/* Position the highlighted card in the center column on md+ screens */
+@media (min-width: 768px) {
+  .plans-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .plan-card--center { grid-column: 2 / 3; max-width: 420px; margin: 0 auto; }
+}
+
+/* Make sure lists and rows stretch nicely */
+.plan-body {
+  /* Ensure lists are readable and consistently indented */
+  text-align: left; /* default: left-align list content for readability */
+}
+
+.plan-body ul {
+  margin: 0;
+  padding-left: 1.25rem; /* consistent indentation for bullets */
+  list-style-position: outside;
+  list-style-type: disc;
+}
+
+.plan-body li {
+  margin-bottom: 0.45rem; /* space between bullet points */
+  line-height: 1.35rem;
+}
+
+.tier-row { width: 100%; }
+
+/* Divider between sections */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.06));
+  margin: 0.5rem 0 0.75rem 0;
+}
+
+/* Button styling for plan actions */
+.plan-actions .btn-try ::ng-deep button,
+.plan-actions .btn-details ::ng-deep button {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+}
+
+/* Try Now - prominent */
+.plan-actions .btn-try ::ng-deep button {
+  background: var(--primary);
+  color: white;
+  border: 1px solid transparent;
+}
+.plan-actions .btn-try ::ng-deep button:hover {
+  filter: brightness(0.95);
+}
+
+/* Details - subtle */
+.plan-actions .btn-details ::ng-deep button {
+  background: transparent;
+  color: var(--muted-foreground);
+  border: 1px solid rgba(15,23,42,0.06);
+}
+.plan-actions .btn-details ::ng-deep button:hover {
+  background: rgba(15,23,42,0.03);
+}
+
+/* Make tier rows visually separated and balanced */
+.tier-row { background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+.tier-row + .tier-row { margin-top: 0.5rem; }
+
+/* Ensure the highlighted card buttons are more prominent */
+  .plan-card--highlight .plan-actions .btn-try ::ng-deep button {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+/* Keep header centered but body (features list) left-aligned for highlighted card */
+.plan-card--center .plan-header { text-align: center; }
+.plan-card--center .plan-body { text-align: left; }
+
+/* Slightly indent the body inside the card for consistent left spacing */
+.plan-card .plan-body { padding-left: 0.25rem; padding-right: 0.25rem; }

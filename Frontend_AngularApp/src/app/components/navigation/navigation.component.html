@@ -1,0 +1,51 @@
+<nav class="fixed top-0 w-full bg-card/80 backdrop-blur-md z-50 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center gap-4">
+        <app-button *ngIf="showBack" (clicked)="handleBack()" variant="ghost" size="sm"
+          className="gap-2 text-muted-foreground hover:text-primary">
+          <span>←</span>
+          <span class="hidden sm:inline">Back</span>
+        </app-button>
+        <a routerLink="/home" class="flex items-center gap-2">
+          <div
+            class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-deep flex items-center justify-center text-lg">
+            ✨
+          </div>
+          <span class="text-foreground">CareerPath AI</span>
+        </a>
+      </div>
+
+      <div class="hidden md:flex items-center gap-8">
+        <ng-container>
+          <a [routerLink]="getTargetRoute('/home')" class="text-muted-foreground hover:text-primary transition-colors">Home</a>
+          <a [routerLink]="getTargetRoute('/features')" class="text-muted-foreground hover:text-primary transition-colors">Features</a>
+          <a [routerLink]="getTargetRoute('/recommendations')"
+            class="text-muted-foreground hover:text-primary transition-colors">Recommendations</a>
+        </ng-container>
+        <div *ngIf="showProfile" class="relative">
+          <app-button (clicked)="toggleDropdown()" variant="outline" size="sm" className="gap-2 shadow-sm">
+            <span>👤</span>
+            {{ userName || 'Profile' }}
+          </app-button>
+          <div *ngIf="showDropdown" class="absolute right-0 mt-2 w-48 bg-card rounded-md shadow-lg py-1 z-50">
+            <a [routerLink]="getTargetRoute('/home')" class="block px-4 py-2 text-sm text-foreground hover:bg-muted">Home</a>
+            <a [routerLink]="getTargetRoute('/features')" class="block px-4 py-2 text-sm text-foreground hover:bg-muted">Features</a>
+            <a (click)="logout()" class="block px-4 py-2 text-sm text-foreground hover:bg-muted">Sign Out</a>
+          </div>
+        </div>
+
+        <!-- Login link (visible when profile not shown) -->
+        <div *ngIf="!showProfile" class="flex items-center">
+          <a routerLink="/login" class="text-muted-foreground hover:text-primary">Login</a>
+        </div>
+      </div>
+
+      <div class="md:hidden">
+        <app-button variant="ghost" size="sm">
+          <span class="text-2xl">☰</span>
+        </app-button>
+      </div>
+    </div>
+  </div>
+</nav>

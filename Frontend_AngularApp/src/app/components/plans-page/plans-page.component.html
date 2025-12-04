@@ -1,0 +1,52 @@
+<div class="min-h-screen p-6 bg-gradient-to-br from-muted to-muted">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold mb-4 text-center">Plans & Pricing</h1>
+    <p class="text-muted-foreground mb-6 text-center mx-auto max-w-2xl">Choose a plan that fits your needs. You will be redirected to the secure checkout to complete payment.</p>
+
+    <div *ngIf="loading" class="text-center py-12">Loading pricing...</div>
+    <div *ngIf="error" class="text-center text-red-500 py-4">{{ error }}</div>
+
+    <div class="plans-grid">
+      <ng-container *ngFor="let product of products">
+        <div class="plan-card" [ngClass]="{'plan-card--center': product.displayName.includes('Careera Pro'), 'plan-card--highlight': product.displayName.includes('Careera Pro')}">
+          <div class="plan-card-inner">
+            <div class="plan-header mb-4">
+              <h3 class="plan-title">{{ product.displayName }}</h3>
+              <p class="plan-subtitle">{{ (product.features?.slice(0,2) || []).join(' • ') }}</p>
+              <div class="plan-meta" *ngIf="product.features || product.tiers">
+                <span class="meta-item">Features: {{ product.features?.length || 0 }}</span>
+                <span class="meta-sep">•</span>
+                <span class="meta-item">Tiers: {{ product.tiers.length || 0 }}</span>
+                <span *ngIf="product.description" class="meta-sep">•</span>
+                <span *ngIf="product.description" class="meta-desc">{{ product.description }}</span>
+              </div>
+            </div>
+
+            <div class="divider" aria-hidden="true"></div>
+
+            <div class="plan-body mb-4 text-sm text-foreground">
+              <ul class="list-disc list-inside">
+                <li *ngFor="let f of product.features || []">{{ f }}</li>
+              </ul>
+            </div>
+
+            <div class="divider" aria-hidden="true"></div>
+
+            <div class="plan-actions space-y-3 w-full">
+              <div *ngFor="let tier of product.tiers; let i = index" class="tier-row flex items-center justify-between p-3 border border-border rounded-md">
+                <div>
+                  <div class="tier-amount font-semibold">{{ getDisplayAmount(tier) }}</div>
+                  <div class="text-sm text-muted-foreground">{{ getCycleLabel(tier.billingCycle, i) }}</div>
+                </div>
+                <div class="flex gap-2">
+                  <app-button class="btn-try" variant="outline" (clicked)="selectProduct(product, tier)">Try Now</app-button>
+                  <app-button class="btn-details" variant="ghost">Details</app-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

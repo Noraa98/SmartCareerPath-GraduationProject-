@@ -1,0 +1,298 @@
+<div class="job-parser min-h-screen bg-gradient-to-br from-muted to-muted pt-24 px-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8" [@fadeInUp]>
+      <!-- <div
+        class="w-20 h-20 mx-auto mb-4 rounded-3xl bg-primary flex items-center justify-center text-5xl shadow-lg">
+        <span [innerHTML]="iconService.getIcon('magnifyingGlass')" class="w-16 h-16 flex items-center text-white flex justify-center"></span>
+      </div> -->
+      <h1 class="text-4xl font-bold text-foreground mb-2">Job Description Parser</h1>
+      <p class="text-muted-foreground text-lg">Analyze job postings to extract key requirements, skills, and insights
+      </p>
+    </div>
+    <!-- Icon 
+              <div class="w-24 h-24 rounded-3xl bg-primary flex items-center justify-center shadow-lg">
+                <span [innerHTML]="iconService.getIcon(recommendations[currentRecommendationIndex].icon)"
+                  class="w-16 h-16 text-white flex items-center justify-center"></span>
+              </div>-->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Input Section -->
+      <div [@fadeInUp]>
+        <app-card class="bg-card/90 backdrop-blur-sm shadow-2xl rounded-3xl border h-full">
+          <app-card-content class="p-8">
+            <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center"
+                [innerHTML]="iconService.getIcon('briefcase')"></span>
+              Paste Job Description
+            </h2>
+
+            <div class="mb-6">
+              <textarea [(ngModel)]="jobDescription" name="jobDescription" rows="20"
+                placeholder="Paste the job description here...
+
+Example:
+We are looking for a Senior Frontend Developer with 3+ years of experience in React and JavaScript. The ideal candidate should have strong problem-solving skills and experience working in an Agile environment..."
+                class="w-full px-4 py-3 rounded-2xl focus: focus:ring-2 focus:ring-primary/20 resize-none transition-all text-foreground placeholder-muted-foreground"
+                [disabled]="isAnalyzing">
+              </textarea>
+            </div>
+
+            <div class="flex gap-4">
+
+
+              <app-button (clicked)="analyzeJobPosting()" [disabled]="isAnalyzing || !jobDescription.trim()"
+                className="flex-1 h-10 rounded-2xl hover:from-accent-dark hover:to-primary-dark text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-semibold text-md gap-2">
+                <span *ngIf="!isAnalyzing" class="flex items-center gap-2">
+                  <span [innerHTML]="iconService.getIcon('magnifyingGlass')"
+                    class="w-5 h-5 flex items-center justify-center"></span>
+                  Analyze Job Posting
+                </span>
+                <span *ngIf="isAnalyzing" class="flex items-center gap-2">
+                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  Analyzing...
+                </span>
+              </app-button>
+
+
+              <app-button *ngIf="analysisComplete" (clicked)="clearAnalysis()" variant="outline"
+                className="rounded-2xl hover:bg-muted hover:text-foreground text-foreground shadow-md hover:shadow-xl transform hover:scale-[1.02] text-md gap-2">
+                Clear
+              </app-button>
+            </div>
+          </app-card-content>
+        </app-card>
+      </div>
+
+      <!-- Results Section -->
+      <div [@fadeInUp] [style.animation-delay.ms]="100">
+        <app-card class="bg-card/90 backdrop-blur-sm shadow-2xl rounded-3xl border h-full">
+          <app-card-content class="p-8">
+            <h2 class="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+              <span class="w-8 h-8 flex items-center justify-center"
+                [innerHTML]="iconService.getIcon('sparkles')"></span>
+              Analysis Results
+            </h2>
+
+            <!-- Loading State -->
+            <div *ngIf="isAnalyzing" class="flex flex-col items-center justify-center py-12" [@scaleIn]>
+              <div
+                class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-deep flex items-center justify-center mb-4 animate-pulse">
+                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                  viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                  </path>
+                </svg>
+              </div>
+              <p class="text-foreground font-medium">AI is analyzing the job description...</p>
+              <p class="text-sm text-muted-foreground mt-2">Extracting skills, requirements, and keywords</p>
+            </div>
+
+            <!-- Results -->
+            <div *ngIf="analysisComplete && analysisResult" class="space-y-6" [@slideIn]>
+              <!-- Basic Info -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+
+                <h3 class="text-lg font-bold text-black mb-3 flex items-center gap-2">
+                  <!-- <span class="text-2xl">🏢</span> -->
+                  Basic Info
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Job Title:</span> {{ analysisResult.basicInfo?.jobTitle }}
+                    </div>
+                    <div class="text-[#64636A]"><span class="text-black font-semibold">Company:</span> {{ analysisResult.basicInfo?.companyName }}
+                    </div>
+                    <div class="text-[#64636A]"><span class="text-black font-semibold">Location:</span> {{ analysisResult.basicInfo?.location }}
+                    </div>
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Remote:</span>
+                       {{ analysisResult.basicInfo?.isRemote ? 'Yes'
+                      : 'No'}}
+                    </div>
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Seniority:</span> {{ analysisResult.seniorityLevel }}</div>
+                    <div class="text-black"><span class="text-black font-semibold">Employment Type:</span> {{ analysisResult.employmentType }}
+                    </div>
+                  </div>
+                  <div>
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Salary:</span>
+                      {{ analysisResult.basicInfo?.salaryRangeMin }} - {{
+                      analysisResult.basicInfo?.salaryRangeMax }}
+                      {{ analysisResult.basicInfo?.salaryCurrency }}
+                    </div>
+
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Experience Required:</span>
+                      {{ analysisResult.basicInfo?.experienceYearsRequired }} years
+                    </div>
+
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Department:</span>
+                      {{ analysisResult.basicInfo?.department }}
+                    </div>
+
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Reporting Line:</span>
+                      {{ analysisResult.basicInfo?.reportingLine?.join(', ') }}
+                    </div>
+
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Parse Quality:</span>
+                      {{ analysisResult.parseQuality }}
+                    </div>
+
+                    <div class="text-[#64636A]">
+                      <span class="text-black font-semibold">Confidence:</span>
+                      {{ analysisResult.parseConfidenceScore }}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Key Skills -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                  <!-- <span class="w-6 h-6 flex items-center justify-center"
+                    [innerHTML]="iconService.getIcon('flag')"></span> -->
+                  Required Skills
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let skill of analysisResult.requiredSkills"
+                    class="px-3 py-1.5 bg-card rounded-xl text-sm font-small text-foreground border shadow-sm">
+                    {{ skill }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Preferred Skills -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                  <!-- <span class="text-2xl">⭐</span> -->
+                  Preferred Skills
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let skill of analysisResult.preferredSkills"
+                    class="px-3 py-1.5 bg-card rounded-xl text-sm font-small text-black border shadow-sm">
+                    {{ skill }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Responsibilities -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                  <!-- <span class="w-6 h-6 flex items-center justify-center"
+                    [innerHTML]="iconService.getIcon('clipboardCheck')"></span> -->
+                  Responsibilities
+                </h3>
+                <ul class="space-y-2">
+                  <li *ngFor="let resp of analysisResult.responsibilities"
+                    class="flex items-start gap-2 text-[#64636A]">
+                    <span class="text-primary mt-1">•</span>
+                    <span>{{ resp }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Requirements -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                  <!-- <span class="text-2xl">📋</span> -->
+                  Requirements
+                </h3>
+                <ul class="space-y-2">
+                  <li *ngFor="let req of analysisResult.requirements"
+                    class="flex items-start gap-2 text-[#64636A]">
+                    <span class="text-primary mt-1">✓</span>
+                    <span>{{ req }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Benefits -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                    <!-- <span class="text-2xl">🎁</span> -->
+                  Benefits
+                </h3>
+                <ul class="space-y-2">
+                  <li *ngFor="let benefit of analysisResult.benefits?.benefits"
+                    class="flex items-start gap-2 text-[#64636A]">
+                    <span class="text-primary mt-1">•</span>
+                    <span>{{ benefit }}</span>
+                  </li>
+                </ul>
+                <div class="mt-2 text-sm text-[#64636A]">
+                  <div *ngIf="analysisResult.benefits?.healthInsurance"><span class="font-semibold text-black">Health
+                      Insurance:</span> {{ analysisResult.benefits.healthInsurance }}</div>
+
+                  <div *ngIf="analysisResult.benefits?.retirementPlan"><span class="font-semibold text-black">Retirement
+                      Plan:</span> {{ analysisResult.benefits.retirementPlan }}</div>
+
+                  <div *ngIf="analysisResult.benefits?.paidTimeOff">
+                    <span class="font-semibold text-black">Paid Time Off:</span> 
+                    {{ analysisResult.benefits.paidTimeOff }} days
+                  </div>
+
+                  <div *ngIf="analysisResult.benefits?.professionalDevelopment"><span class="font-semibold text-black">Professional
+                      Development:</span> {{ analysisResult.benefits.professionalDevelopment }}</div>
+
+                  <div *ngIf="analysisResult.benefits?.remoteWorkOptions">
+                    <span class=" font-semibold text-black">Remote Work Options:</span> 
+                      Yes
+                  </div>
+
+                  <div *ngIf="analysisResult.benefits?.flexibleSchedule"><span class="font-semibold text-black">Flexible
+                      Schedule:</span> Yes</div>
+                </div>
+              </div>
+
+              <!-- Key Technologies -->
+              <div class="p-5 bg-gradient-to-br from-muted to-muted rounded-2xl border">
+                <h3 class="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                  <!-- <span class="text-2xl">🔑</span> -->
+                  Key Technologies
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let tech of analysisResult.keyTechnologies"
+                    class="px-3 py-1.5 bg-card rounded-xl text-sm text-black border shadow-sm">
+                    {{ tech }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isAnalyzing && !analysisComplete"
+              class="flex flex-col items-center justify-center py-12 text-center">
+              <div class="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <!-- <span class="w-12 h-12 flex text-black items-center justify-center"
+                    [innerHTML]="iconService.getIcon('documentText')"></span> -->
+              </div>
+              <p class="text-muted-foreground font-medium">Paste a job description to get started</p>
+              <p class="text-sm text-muted-foreground mt-2">Our AI will extract key information and provide insights</p>
+            </div>
+          </app-card-content>
+        </app-card>
+      </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-6 text-center">
+      <app-button (clicked)="onBack()"
+        className="text-[white] transition-all duration-300 hover:shadow-xl transform hover:scale-105 hover:text-foreground/80 font-medium gap-2 mb-5">
+        <span [innerHTML]="iconService.getIcon('chevronLeft')"></span> Back to Features
+      </app-button>
+    </div>
+  </div>
+</div>
